@@ -55,16 +55,17 @@ BEGIN
 END;
 GO
 
-ALTER PROCEDURE availableCityList 
+CREATE PROCEDURE getPlanOptionByPlanId @PlanId INT
 AS
 BEGIN
- SELECT 
-        Address,
-        City,PostalCode FROM dbo.RetailStores
-
+    SELECT Id,OptionName FROM dbo.PlansOption WHERE PlanId = @PlanId
 END
-GO
 
-SELECT * FROM dbo.RetailStores
+go
 
-EXEC dbo.getAllPlan
+CREATE PROCEDURE getPlanDetailByPlanOptionId @PlanOptionId INT
+AS
+BEGIN
+    SELECT * FROM dbo.PlansDetail WHERE PlansOptionId = @PlanOptionId
+END
+
