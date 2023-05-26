@@ -1,6 +1,7 @@
 ﻿using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Data.SqlClient;
+using NuGet.Protocol;
 using System.Data;
 
 namespace Nexus.Controllers
@@ -19,7 +20,7 @@ namespace Nexus.Controllers
 
 
         [HttpPost("{name}")]
-        public IActionResult CallStoreProcedure(string name, [FromBody] List<object> parameters = default)
+        public IActionResult CallStoreProcedure(string name, [FromBody] Dictionary<string, object> parameters )
         {
             using (SqlConnection connection = new SqlConnection(connectionString))
             {
@@ -31,30 +32,38 @@ namespace Nexus.Controllers
 
                     if (parameters != null)
                     {
-                        for (int i = 0; i < parameters.Count; i++)
+                        foreach (KeyValuePair<string, object> parameter in parameters)
                         {
-                            SqlParameter parameter = new SqlParameter($"@p{i}", parameters[i]);
-                            command.Parameters.Add(parameter);
+                            SqlParameter sqlParameter = new SqlParameter(parameter.Key, parameter.Value.ToString());
+                            command.Parameters.Add(sqlParameter);
                         }
+
                     }
 
                     using (SqlDataAdapter adapter = new SqlDataAdapter(command))
                     {
-                        DataTable resultTable = new DataTable();
-                        adapter.Fill(resultTable);
 
-                        List<Dictionary<string, object>> resultList = new List<Dictionary<string, object>>();
-                        foreach (DataRow row in resultTable.Rows)
+                        try
                         {
-                            Dictionary<string, object> resultDict = new Dictionary<string, object>();
-                            foreach (DataColumn col in resultTable.Columns)
-                            {
-                                resultDict[col.ColumnName] = row[col];
-                            }
-                            resultList.Add(resultDict);
-                        }
+                            DataTable resultTable = new DataTable();
+                            adapter.Fill(resultTable);
 
-                        return Ok(resultList);
+                            List<Dictionary<string, dynamic>> resultList = new List<Dictionary<string, dynamic>>();
+                            foreach (DataRow row in resultTable.Rows)
+                            {
+                                Dictionary<string, dynamic> resultDict = new Dictionary<string, dynamic>();
+                                foreach (DataColumn col in resultTable.Columns)
+                                {
+                                    resultDict[col.ColumnName] = row.IsNull(col) ? null : row[col]; ;
+                                }
+                                resultList.Add(resultDict);
+                            }
+
+                            return Ok(resultList);
+                        }catch (Exception ex)
+                        {
+                            return BadRequest(ex.Message);
+                        }
                     }
                 }
             }
