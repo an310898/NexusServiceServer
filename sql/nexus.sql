@@ -55,17 +55,7 @@ CREATE TABLE Employees
 );
 
 
-CREATE TABLE Products
-(
-    Id INT PRIMARY KEY IDENTITY(1, 1),
-    ProductName VARCHAR(100),
-    Description VARCHAR(200),
-    Price DECIMAL(10, 2),
-    QuantityInStock INT,
-    IsHidden BIT
-        DEFAULT 0,
-    Manufacturer VARCHAR(100),
-);
+
 CREATE TABLE Plans
 (
     Id INT IDENTITY(1, 1) PRIMARY KEY,
@@ -74,6 +64,7 @@ CREATE TABLE Plans
     IsHidden BIT
         DEFAULT 0
 );
+
 CREATE TABLE PlansOption (
 	Id INT IDENTITY(1,1) PRIMARY KEY,
 	PlanId INT FOREIGN KEY REFERENCES dbo.Plans(Id),
@@ -88,6 +79,20 @@ CREATE TABLE PlansDetail
     DataLimit DECIMAL(10, 2),
     CallCharges VARCHAR(300),
     Price DECIMAL(10, 2)
+);
+
+CREATE TABLE Products
+(
+    Id INT PRIMARY KEY IDENTITY(1, 1),
+    ProductName VARCHAR(100),
+	ProductImageUrl NVARCHAR(max),
+    Description VARCHAR(200),
+    Price DECIMAL(10, 2),
+    QuantityInStock INT,
+    IsHidden BIT
+        DEFAULT 0,
+    Manufacturer VARCHAR(100),
+	ForPlan int FOREIGN KEY REFERENCES dbo.Plans(Id)
 );
 
 CREATE TABLE Orders
@@ -150,9 +155,9 @@ CREATE TABLE RetailStores
     Address NVARCHAR(100),
     Phone VARCHAR(20),
     City VARCHAR(50),
-    State VARCHAR(50),
+    State bit,
     PostalCode VARCHAR(10),
-    ManagerName NVARCHAR(100),
+    ManagerId int FOREIGN KEY REFERENCES dbo.Employees(Id),
 );
 
 CREATE TABLE Feedback
@@ -615,7 +620,7 @@ VALUES
     'Unlimited - 75$ (Valid for an year and this is the rental)', -- Description - varchar(200)
     'Unlimited',                                                  -- Duration - varchar(20)
     NULL,                                                         -- DataLimit - decimal(10, 2)
-    '55 Cents / Minute',                                          -- CallCharges - decimal(10, 2)
+    '55cents / minute',                                          -- CallCharges - decimal(10, 2)
     75                                                            -- Price - decimal(10, 2)
     );
 INSERT INTO dbo.PlansDetail
@@ -632,7 +637,7 @@ VALUES
     'Monthly - 35$ (Valid for a month and this is the rental)', -- Description - varchar(200)
     'Monthly',                                                  -- Duration - varchar(20)
     NULL,                                                       -- DataLimit - decimal(10, 2)
-    '75 Cents / Minute',                                        -- CallCharges - decimal(10, 2)
+    '75cents / minute',                                        -- CallCharges - decimal(10, 2)
     35                                                          -- Price - decimal(10, 2)
     );
 
@@ -690,3 +695,25 @@ VALUES
     'Local : 60cents / minute <br />STD : 1.75$ / minute <br/>Messaging For Mobiles : 1.25$ / Minute',                             -- CallCharges - varchar(50)
     700                                                              -- Price - decimal(10, 2)
     );
+
+
+
+	INSERT INTO dbo.RetailStores
+	(
+	    StoreName,
+	    Address,
+	    Phone,
+	    City,
+	    State,
+	    PostalCode,
+	    ManagerId
+	)
+	VALUES
+	(   'Nexus Da Nang', -- StoreName - nvarchar(100)
+	    '39 Yen Bai, Da Nang, VietNam', -- Address - nvarchar(100)
+	    '0935263945', -- Phone - varchar(20)
+	    'Da Nang', -- City - varchar(50)
+	    1, -- State - varchar(50)
+	    '550000', -- PostalCode - varchar(10)
+	    1  -- ManagerId - int
+	    )
