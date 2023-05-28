@@ -23,7 +23,7 @@ END;
 GO
 
 
-ALTER PROCEDURE getAllPlan
+CREATE PROCEDURE getAllPlan
 AS
 BEGIN
     SELECT P.Id,
@@ -69,3 +69,19 @@ BEGIN
     SELECT * FROM dbo.PlansDetail WHERE PlansOptionId = @PlanOptionId
 END
 
+GO
+
+CREATE PROCEDURE getProductForPlan @PlanId INT
+AS
+BEGIN
+    SELECT Id,
+           ProductName,
+           ProductImageUrl,
+           Description,
+           Price,
+           QuantityInStock,
+           IsHidden,
+           Manufacturer FROM dbo.Products WHERE ForPlan = @PlanId
+END
+
+EXEC dbo.getProductForPlan @PlanId = 2 -- int
