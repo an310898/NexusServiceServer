@@ -14,4 +14,6 @@ public partial class Plan
     public bool? IsHidden { get; set; }
 
     public virtual ICollection<PlansOption> PlansOptions { get; set; } = new List<PlansOption>();
+
+    public virtual ICollection<Product> Products { get; set; } = new List<Product>();
 }

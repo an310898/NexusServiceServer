@@ -35,5 +35,7 @@ public partial class Employee
 
     public DateTime? CreatedDate { get; set; }
 
+    public virtual ICollection<RetailStore> RetailStores { get; set; } = new List<RetailStore>();
+
     public virtual Role? Role { get; set; }
 }

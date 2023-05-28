@@ -9,6 +9,8 @@ public partial class Product
 
     public string? ProductName { get; set; }
 
+    public string? ProductImageUrl { get; set; }
+
     public string? Description { get; set; }
 
     public decimal? Price { get; set; }
@@ -19,7 +21,11 @@ public partial class Product
 
     public string? Manufacturer { get; set; }
 
+    public int? ForPlan { get; set; }
+
     public virtual ICollection<BillDetail> BillDetails { get; set; } = new List<BillDetail>();
 
-    public virtual ICollection<OrderDetail> OrderDetails { get; set; } = new List<OrderDetail>();
+    public virtual Plan? ForPlanNavigation { get; set; }
+
+    public virtual ICollection<Order> Orders { get; set; } = new List<Order>();
 }

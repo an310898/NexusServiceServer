@@ -15,9 +15,11 @@ public partial class RetailStore
 
     public string? City { get; set; }
 
-    public string? State { get; set; }
+    public bool? State { get; set; }
 
     public string? PostalCode { get; set; }
 
-    public string? ManagerName { get; set; }
+    public int? ManagerId { get; set; }
+
+    public virtual Employee? Manager { get; set; }
 }
