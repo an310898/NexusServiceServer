@@ -15,8 +15,6 @@ public partial class Employee
 
     public string? Phone { get; set; }
 
-    public string? Address { get; set; }
-
     public string? Username { get; set; }
 
     public string? Password { get; set; }
@@ -31,7 +29,7 @@ public partial class Employee
 
     public int? RoleId { get; set; }
 
-    public bool? IsHidden { get; set; }
+    public string? State { get; set; }
 
     public DateTime? CreatedDate { get; set; }
 

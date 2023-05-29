@@ -17,23 +17,17 @@ public partial class Customer
 
     public string? Address { get; set; }
 
-    public DateTime? DateOfBirth { get; set; }
-
-    public string? Gender { get; set; }
-
-    public string? City { get; set; }
+    public int? CityId { get; set; }
 
     public string? State { get; set; }
 
-    public string? PostalCode { get; set; }
-
     public decimal? SecurityDeposit { get; set; }
-
-    public bool? IsHidden { get; set; }
 
     public DateTime? CreatedDate { get; set; }
 
     public virtual ICollection<Billing> Billings { get; set; } = new List<Billing>();
+
+    public virtual CityAvailable? City { get; set; }
 
     public virtual ICollection<CustomerPlan> CustomerPlans { get; set; } = new List<CustomerPlan>();
 

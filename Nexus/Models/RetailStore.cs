@@ -13,13 +13,13 @@ public partial class RetailStore
 
     public string? Phone { get; set; }
 
-    public string? City { get; set; }
+    public int? CityId { get; set; }
 
-    public bool? State { get; set; }
-
-    public string? PostalCode { get; set; }
+    public string? State { get; set; }
 
     public int? ManagerId { get; set; }
+
+    public virtual CityAvailable? City { get; set; }
 
     public virtual Employee? Manager { get; set; }
 }
