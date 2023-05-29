@@ -15,8 +15,8 @@ BEGIN
            DateOfBirth,
            Gender,
            JoiningDate,
+		   State,
            Salary,
-           IsHidden,
            CreatedDate
     FROM dbo.Employees;
 END;
@@ -34,15 +34,12 @@ FROM dbo.Plans P
 END
 
 GO
-CREATE PROCEDURE checkAvailableZipCode @ZipCode VARCHAR(10)
+CREATE PROCEDURE checkAvailableZipCode @ZipOrCityName VARCHAR(50)
 AS
 BEGIN
     IF EXISTS
     (
-        SELECT TOP 1
-               *
-        FROM dbo.RetailStores
-        WHERE PostalCode = @ZipCode
+     SELECT TOP 1 * FROM dbo.CityAvailable WHERE PostalCode = @ZipOrCityName OR Name = @ZipOrCityName
     )
     BEGIN
         SELECT 1 AS result
@@ -84,4 +81,6 @@ BEGIN
            Manufacturer FROM dbo.Products WHERE ForPlan = @PlanId
 END
 
-EXEC dbo.getProductForPlan @PlanId = 2 -- int
+GO
+
+SELECT * FROM dbo.Customers

@@ -7,6 +7,13 @@ GO
 USE NEXUS;
 GO
 
+
+CREATE TABLE CityAvailable(
+	Id INT IDENTITY(1,1) PRIMARY KEY,
+	Name NVARCHAR(50),
+	PostalCode VARCHAR(10),
+	IsHidden BIT DEFAULT 0
+)
 CREATE TABLE Customers
 (
     Id VARCHAR(12) PRIMARY KEY,
@@ -15,22 +22,15 @@ CREATE TABLE Customers
     Email VARCHAR(100),
     Phone VARCHAR(11),
     Address NVARCHAR(100),
-    DateOfBirth DATE,
-    Gender VARCHAR(10),
-    City NVARCHAR(50),
+    CityId INT FOREIGN KEY REFERENCES dbo.CityAvailable(Id),
     State NVARCHAR(50),
-    PostalCode VARCHAR(10),
     SecurityDeposit DECIMAL(10, 2),
-    IsHidden BIT
-        DEFAULT 0,
     CreatedDate DATETIME
         DEFAULT GETDATE()
 );
 CREATE TABLE Roles
 (
     Id INT IDENTITY(1, 1) PRIMARY KEY,
-    IsHidden BIT
-        DEFAULT 0,
     RoleName NVARCHAR(50) NOT NULL
 );
 CREATE TABLE Employees
@@ -40,7 +40,6 @@ CREATE TABLE Employees
     LastName NVARCHAR(50),
     Email VARCHAR(100),
     Phone VARCHAR(20),
-    Address NVARCHAR(100),
     Username VARCHAR(50),
     Password VARCHAR(50),
     DateOfBirth DATE,
@@ -49,8 +48,7 @@ CREATE TABLE Employees
     Salary DECIMAL(10, 2),
     RoleId INT
         FOREIGN KEY REFERENCES dbo.Roles (Id),
-    IsHidden BIT
-        DEFAULT 0,
+    State VARCHAR(50),
     CreatedDate DATETIME
         DEFAULT GETDATE()
 );
@@ -173,9 +171,8 @@ CREATE TABLE RetailStores
     StoreName NVARCHAR(100),
     Address NVARCHAR(100),
     Phone VARCHAR(20),
-    City VARCHAR(50),
-    State BIT,
-    PostalCode VARCHAR(10),
+    CityId INT FOREIGN KEY REFERENCES CityAvailable(Id),
+    State VARCHAR(50),
     ManagerId INT
         FOREIGN KEY REFERENCES dbo.Employees (Id),
 );
@@ -191,50 +188,58 @@ CREATE TABLE Feedback
     FOREIGN KEY (CustomerID) REFERENCES Customers (Id)
 );
 
-
-
+INSERT INTO dbo.CityAvailable
+(
+    Name,
+    PostalCode
+)
+VALUES
+(   'Da Nang', -- Name - nvarchar(50)
+    '50000'  -- PostalCode - varchar(10)
+    )
+	INSERT INTO dbo.CityAvailable
+	(
+	    Name,
+	    PostalCode
+	)
+	VALUES
+	(   'Ha Noi', -- Name - nvarchar(50)
+	    '14000'  -- PostalCode - varchar(10)
+	    )
 
 INSERT INTO dbo.Roles
 (
-    IsHidden,
     RoleName
 )
 VALUES
-(   DEFAULT, -- IsHidden - bit
-    N'Admin' -- RoleName - nvarchar(50)
+(N'Admin' -- RoleName - nvarchar(50)
     );
 
 
 INSERT INTO dbo.Roles
 (
-    IsHidden,
     RoleName
 )
 VALUES
-(   DEFAULT,      -- IsHidden - bit
-    N'Accountant' -- RoleName - nvarchar(50)
+(N'Accountant' -- RoleName - nvarchar(50)
     );
 
 
 INSERT INTO dbo.Roles
 (
-    IsHidden,
     RoleName
 )
 VALUES
-(   DEFAULT,     -- IsHidden - bit
-    N'Technical' -- RoleName - nvarchar(50)
+(N'Technical' -- RoleName - nvarchar(50)
     );
 
 
 INSERT INTO dbo.Roles
 (
-    IsHidden,
     RoleName
 )
 VALUES
-(   DEFAULT,        -- IsHidden - bit
-    N'Retail Store' -- RoleName - nvarchar(50)
+(N'Retail Store' -- RoleName - nvarchar(50)
     );
 
 
@@ -244,15 +249,13 @@ INSERT INTO dbo.Employees
     LastName,
     Email,
     Phone,
-    Address,
     Username,
     Password,
     DateOfBirth,
-    Gender,
     JoiningDate,
     Salary,
     RoleId,
-    IsHidden,
+	State,
     CreatedDate
 )
 VALUES
@@ -260,14 +263,13 @@ VALUES
     'An',                 -- LastName - nvarchar(50)
     'an310898@gmail.com', -- Email - varchar(100)
     '0935263945',         -- Phone - varchar(20)
-    '67 Mai Am',          -- Address - nvarchar(100)
     'anns318',            -- Username - varchar(50)
     '123123',             -- Password - varchar(50)
     '1998-08-31',         -- DateOfBirth - date
-    'Name',               -- Gender - varchar(10)
     GETDATE(),            -- JoiningDate - date
     '1000',               -- Salary - decimal(10, 2)
-    1, DEFAULT,           -- IsHidden - bit
+	1,
+	'Active',
     DEFAULT               -- CreatedDate - datetime
     );
 
@@ -723,18 +725,16 @@ INSERT INTO dbo.RetailStores
     StoreName,
     Address,
     Phone,
-    City,
+    CityId,
     State,
-    PostalCode,
     ManagerId
 )
 VALUES
 (   'Nexus Da Nang',                -- StoreName - nvarchar(100)
     '39 Yen Bai, Da Nang, VietNam', -- Address - nvarchar(100)
     '0935263945',                   -- Phone - varchar(20)
-    'Da Nang',                      -- City - varchar(50)
-    1,                              -- State - bit
-    '550000',                       -- PostalCode - varchar(10)
+    1,								-- City - varchar(50)
+    'Active',                              -- State - bit
     1                               -- ManagerId - int
     );
 
@@ -745,18 +745,16 @@ INSERT INTO dbo.RetailStores
     StoreName,
     Address,
     Phone,
-    City,
+    CityId,
     State,
-    PostalCode,
     ManagerId
 )
 VALUES
 (   'Nexus Ha Noi',                -- StoreName - nvarchar(100)
     '39 Yen Bai, Ha Noi, VietNam', -- Address - nvarchar(100)
     '0935263945',                  -- Phone - varchar(20)
-    'Ha Noi',                      -- City - varchar(50)
-    1,                             -- State - bit
-    '000084',                      -- PostalCode - varchar(10)
+    2,                      -- City - varchar(50)
+    'Active',                             -- State - bit
     1                              -- ManagerId - int
     );
 
@@ -796,7 +794,7 @@ INSERT INTO dbo.Products
 )
 VALUES
 (   'NETGEAR - Nighthawk 32 x 8 DOCSIS 3.1 Voice Cable Modem',                                                                                                                                                                                                                                                                                                                                                                                   -- ProductName - varchar(100)
-    'https://pisces.bbystatic.com/image2/BestBuy_US/images/products/6425/6425815_rd.jpg',                                                                                                                                                                                                                                                                                                                             -- ProductImageUrl - nvarchar(max)
+    'https://pisces.bbystatic.com/image2/BestBuy_US/images/products/6425/6425815_rd.jpg',                                                                                                                                                                                                                                                                                                                                                        -- ProductImageUrl - nvarchar(max)
     'This NETGEAR Nighthawk ultra-high-speed cable modem for Xfinity Voice (CM2050V) delivers the gigabit-speed cable Internet and perfect call clarity. This DOCSIS 3.1 cable modem with voice supports all of today''s Internet service plans and is designed for the high-performance Internet in the future. CM2050V includes two telephone ports that automatically prioritize voice over the Internet for clear and uninterrupted calls.', -- Description - varchar(200)
     322.99,                                                                                                                                                                                                                                                                                                                                                                                                                                      -- Price - decimal(10, 2)
     10,                                                                                                                                                                                                                                                                                                                                                                                                                                          -- QuantityInStock - int
@@ -817,17 +815,17 @@ INSERT INTO dbo.Products
     ForPlan
 )
 VALUES
-(   'Motorola - MG7700 24x8 DOCSIS 3.0 Cable Modem + AC1900 Router - Black',                                                                                                                                                                                                                                                                                                                                                                                   -- ProductName - varchar(100)
-    'https://pisces.bbystatic.com/image2/BestBuy_US/images/products/6298/6298663ld.jpg',                                                                                                                                                                                                                                                                                                                             -- ProductImageUrl - nvarchar(max)
+(   'Motorola - MG7700 24x8 DOCSIS 3.0 Cable Modem + AC1900 Router - Black',                                                                                                                                                                                                                                                                                                                                                                                                                                                                   -- ProductName - varchar(100)
+    'https://pisces.bbystatic.com/image2/BestBuy_US/images/products/6298/6298663ld.jpg',                                                                                                                                                                                                                                                                                                                                                                                                                                                       -- ProductImageUrl - nvarchar(max)
     'The Motorola MG7700 24x8 DOCSIS 3.0 cable modem + AC1900 dual-band (2.4GHz and 5GHz) Wi-Fi Gigabit router with four Gigabit (GigE) Ethernet ports, power boost Wi-Fi amplifiers, firewall security, and more. Power Boost technology amplifies the wireless signal to the limit set by the Federal Communications Commission (FCC) to deliver higher WiFi speeds and extend the WiFi range. AnyBeam WiFi beamforming at 2.4 GHz and 5 GHz focuses the wireless signal on your wireless devices to further enhance wireless performance.', -- Description - varchar(200)
-    164.99,                                                                                                                                                                                                                                                                                                                                                                                                                                      -- Price - decimal(10, 2)
-    10,                                                                                                                                                                                                                                                                                                                                                                                                                                          -- QuantityInStock - int
-    0,                                                                                                                                                                                                                                                                                                                                                                                                                                           -- IsHidden - bit
-    'Motorola',                                                                                                                                                                                                                                                                                                                                                                                                                                   -- Manufacturer - varchar(100)
-    2                                                                                                                                                                                                                                                                                                                                                                                                                                            -- ForPlan - int
+    164.99,                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                    -- Price - decimal(10, 2)
+    10,                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                        -- QuantityInStock - int
+    0,                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                         -- IsHidden - bit
+    'Motorola',                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                -- Manufacturer - varchar(100)
+    2                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                          -- ForPlan - int
     );
 
-	INSERT INTO dbo.Products
+INSERT INTO dbo.Products
 (
     ProductName,
     ProductImageUrl,
@@ -839,80 +837,86 @@ VALUES
     ForPlan
 )
 VALUES
-(   'NETGEAR - Nighthawk AC3200 Wi-Fi Router with DOCSIS 3.1 Cable Modem',                                                                                                                                                                                                                                                                                                                                                                                   -- ProductName - varchar(100)
-    'https://pisces.bbystatic.com/image2/BestBuy_US/images/products/6345/6345937_sd.jpg',                                                                                                                                                                                                                                                                                                                             -- ProductImageUrl - nvarchar(max)
+(   'NETGEAR - Nighthawk AC3200 Wi-Fi Router with DOCSIS 3.1 Cable Modem',                                                                                                                                                                                                                                                                                                                                                                                                                                                                                        -- ProductName - varchar(100)
+    'https://pisces.bbystatic.com/image2/BestBuy_US/images/products/6345/6345937_sd.jpg',                                                                                                                                                                                                                                                                                                                                                                                                                                                                         -- ProductImageUrl - nvarchar(max)
     'This NETGEAR® Nighthawk® X4S AC3200 Wi-Fi DOCSIS® 3.1 ultra-high-speed cable modem router works with the fast DOCSIS® 3.0 and is ready for new DOCSIS® 3.1 Gigabit Internet speeds. The NETGEAR X4S DOCSIS® 3.1 cable modem router with 32 x 8 channel bonding (in DOCSIS® 3.0 mode) offers fast Internet speeds that rival the speed of fiber. Enjoy a quality experience for streaming multiple HD-quality videos to multiple devices, VR gaming and more. Ideal for fast Internet cable services, such as XFINITY® from Comcast and Cox Internet plans.', -- Description - varchar(200)
-   343.99,                                                                                                                                                                                                                                                                                                                                                                                                                                      -- Price - decimal(10, 2)
-    10,                                                                                                                                                                                                                                                                                                                                                                                                                                          -- QuantityInStock - int
-    0,                                                                                                                                                                                                                                                                                                                                                                                                                                           -- IsHidden - bit
-    'Motorola',                                                                                                                                                                                                                                                                                                                                                                                                                                   -- Manufacturer - varchar(100)
-    2                                                                                                                                                                                                                                                                                                                                                                                                                                            -- ForPlan - int
+    343.99,                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                       -- Price - decimal(10, 2)
+    10,                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                           -- QuantityInStock - int
+    0,                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                            -- IsHidden - bit
+    'Motorola',                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                   -- Manufacturer - varchar(100)
+    2                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                             -- ForPlan - int
     );
 
 
-	INSERT INTO dbo.Products
-	(
-	    ProductName,
-	    ProductImageUrl,
-	    Description,
-	    Price,
-	    QuantityInStock,
-	    IsHidden,
-	    Manufacturer,
-	    ForPlan
-	)
-	VALUES
-	(   'VTech - Amplified Corded/Cordless Answering System with Big Buttons Display - White',    -- ProductName - varchar(100)
-	    'https://pisces.bbystatic.com/image2/BestBuy_US/images/products/6385/6385823_rd.jpg',    -- ProductImageUrl - nvarchar(max)
-	    'Designed for seniors or the hearing impaired, the VTech SN5147 Amplified Corded/Cordless Senior Phone System with 90dB Extra Loud Visual Ringer, Big Buttons & Large Display comes with features to make hearing and dialing calls easier than ever. With big butttons, large displays, and a full-duplex speakerphone on each device, this senior-friendly telephone system takes the guesswork out of dialing calls.',    -- Description - varchar(200)
-		96.99,    -- Price - decimal(10, 2)
-	    10,    -- QuantityInStock - int
-	    0, -- IsHidden - bit
-	    'VTech',    -- Manufacturer - varchar(100)
-	    3     -- ForPlan - int
-	    )
+INSERT INTO dbo.Products
+(
+    ProductName,
+    ProductImageUrl,
+    Description,
+    Price,
+    QuantityInStock,
+    IsHidden,
+    Manufacturer,
+    ForPlan
+)
+VALUES
+(   'VTech - Amplified Corded/Cordless Answering System with Big Buttons Display - White',                                                                                                                                                                                                                                                                                                                                    -- ProductName - varchar(100)
+    'https://pisces.bbystatic.com/image2/BestBuy_US/images/products/6385/6385823_rd.jpg',                                                                                                                                                                                                                                                                                                                                     -- ProductImageUrl - nvarchar(max)
+    'Designed for seniors or the hearing impaired, the VTech SN5147 Amplified Corded/Cordless Senior Phone System with 90dB Extra Loud Visual Ringer, Big Buttons & Large Display comes with features to make hearing and dialing calls easier than ever. With big butttons, large displays, and a full-duplex speakerphone on each device, this senior-friendly telephone system takes the guesswork out of dialing calls.', -- Description - varchar(200)
+    96.99,                                                                                                                                                                                                                                                                                                                                                                                                                    -- Price - decimal(10, 2)
+    10,                                                                                                                                                                                                                                                                                                                                                                                                                       -- QuantityInStock - int
+    0,                                                                                                                                                                                                                                                                                                                                                                                                                        -- IsHidden - bit
+    'VTech',                                                                                                                                                                                                                                                                                                                                                                                                                  -- Manufacturer - varchar(100)
+    3                                                                                                                                                                                                                                                                                                                                                                                                                         -- ForPlan - int
+    );
 
 
-		INSERT INTO dbo.Products
-	(
-	    ProductName,
-	    ProductImageUrl,
-	    Description,
-	    Price,
-	    QuantityInStock,
-	    IsHidden,
-	    Manufacturer,
-	    ForPlan
-	)
-	VALUES
-	(   'VTech - CM18045 DECT 6.0 Cordless Expansion Handset Only - Silver',    -- ProductName - varchar(100)
-	    'https://pisces.bbystatic.com/image2/BestBuy_US/images/products/4571/4571502_ra.jpg',    -- ProductImageUrl - nvarchar(max)
-	    'This VTech CM18045 DECT 6.0 cordless expansion handset features an extra-large display for easy viewing and a 50 name-and-number caller ID history for convenient callback. The full-duplex speakerphone lets both parties speak at the same time.',    -- Description - varchar(200)
-	    51.99,    -- Price - decimal(10, 2)
-	    10,    -- QuantityInStock - int
-	    0, -- IsHidden - bit
-	    'VTech',    -- Manufacturer - varchar(100)
-	    3     -- ForPlan - int
-	    )
+INSERT INTO dbo.Products
+(
+    ProductName,
+    ProductImageUrl,
+    Description,
+    Price,
+    QuantityInStock,
+    IsHidden,
+    Manufacturer,
+    ForPlan
+)
+VALUES
+(   'VTech - CM18045 DECT 6.0 Cordless Expansion Handset Only - Silver',                                                                                                                                                                                  -- ProductName - varchar(100)
+    'https://pisces.bbystatic.com/image2/BestBuy_US/images/products/4571/4571502_ra.jpg',                                                                                                                                                                 -- ProductImageUrl - nvarchar(max)
+    'This VTech CM18045 DECT 6.0 cordless expansion handset features an extra-large display for easy viewing and a 50 name-and-number caller ID history for convenient callback. The full-duplex speakerphone lets both parties speak at the same time.', -- Description - varchar(200)
+    51.99,                                                                                                                                                                                                                                                -- Price - decimal(10, 2)
+    10,                                                                                                                                                                                                                                                   -- QuantityInStock - int
+    0,                                                                                                                                                                                                                                                    -- IsHidden - bit
+    'VTech',                                                                                                                                                                                                                                              -- Manufacturer - varchar(100)
+    3                                                                                                                                                                                                                                                     -- ForPlan - int
+    );
 
-		INSERT INTO dbo.Products
-	(
-	    ProductName,
-	    ProductImageUrl,
-	    Description,
-	    Price,
-	    QuantityInStock,
-	    IsHidden,
-	    Manufacturer,
-	    ForPlan
-	)
-	VALUES
-	(   'VTech - 5 Handset Connect to Cell Answering System with Super Long Range - Silver and Black',    -- ProductName - varchar(100)
-	    'https://pisces.bbystatic.com/image2/BestBuy_US/images/products/6406/6406779_rd.jpg',    -- ProductImageUrl - nvarchar(max)
-	    'Experience the industy''s best cordless range with the VTech IS8151-5 DECT 6.0 Expandable Cordless Phone featuring Super Long Range, Bluetooth Connect to Cell and Smart Call Blocker, you won''t have to worry about unwanted calls waking you up in the middle of the night or tying up the line. Robocalls are automatically blocked from ever ringing through—even the first time. You can also permanently blacklist any number you want with one touch. With up to 2300 feet or range.',    -- Description - varchar(200)
-	    132.99,    -- Price - decimal(10, 2)
-	    10,    -- QuantityInStock - int
-	    0, -- IsHidden - bit
-	    'VTech',    -- Manufacturer - varchar(100)
-	    3     -- ForPlan - int
-	    )
+INSERT INTO dbo.Products
+(
+    ProductName,
+    ProductImageUrl,
+    Description,
+    Price,
+    QuantityInStock,
+    IsHidden,
+    Manufacturer,
+    ForPlan
+)
+VALUES
+(   'VTech - 5 Handset Connect to Cell Answering System with Super Long Range - Silver and Black',                                                                                                                                                                                                                                                                                                                                                                                                  -- ProductName - varchar(100)
+    'https://pisces.bbystatic.com/image2/BestBuy_US/images/products/6406/6406779_rd.jpg',                                                                                                                                                                                                                                                                                                                                                                                                           -- ProductImageUrl - nvarchar(max)
+    'Experience the industy''s best cordless range with the VTech IS8151-5 DECT 6.0 Expandable Cordless Phone featuring Super Long Range, Bluetooth Connect to Cell and Smart Call Blocker, you won''t have to worry about unwanted calls waking you up in the middle of the night or tying up the line. Robocalls are automatically blocked from ever ringing through—even the first time. You can also permanently blacklist any number you want with one touch. With up to 2300 feet or range.', -- Description - varchar(200)
+    132.99,                                                                                                                                                                                                                                                                                                                                                                                                                                                                                         -- Price - decimal(10, 2)
+    10,                                                                                                                                                                                                                                                                                                                                                                                                                                                                                             -- QuantityInStock - int
+    0,                                                                                                                                                                                                                                                                                                                                                                                                                                                                                              -- IsHidden - bit
+    'VTech',                                                                                                                                                                                                                                                                                                                                                                                                                                                                                        -- Manufacturer - varchar(100)
+    3                                                                                                                                                                                                                                                                                                                                                                                                                                                                                               -- ForPlan - int
+    );
+
+
+	SELECT * FROM dbo.Employees
+	SELECT * FROM dbo.CityAvailable
+	SELECT * FROM dbo.RetailStores
+	SELECT * FROM dbo.Customers
