@@ -23,7 +23,7 @@ public partial class Product
 
     public int? ForPlan { get; set; }
 
-    public virtual ICollection<BillDetail> BillDetails { get; set; } = new List<BillDetail>();
+    public virtual ICollection<CustomerPlan> CustomerPlans { get; set; } = new List<CustomerPlan>();
 
     public virtual Plan? ForPlanNavigation { get; set; }
 

@@ -104,4 +104,164 @@ BEGIN
 END;
 GO
 
-EXEC dbo.getAvailableCity
+GO
+CREATE FUNCTION GenerateEmpID
+(
+    @Prefix NVARCHAR(10),
+    @Id INT,
+    @Length INT,
+    @PaddingChar CHAR(1) = '0'
+)
+RETURNS NVARCHAR(MAX)
+AS
+BEGIN
+
+    RETURN
+    (
+        SELECT @Prefix + RIGHT(REPLICATE(@PaddingChar, @Length) + CAST(@Id AS NVARCHAR(10)), @Length)
+    );
+
+END;
+GO
+
+ALTER PROCEDURE addNewCustomer
+    @FirstName NVARCHAR(50),
+    @LastName NVARCHAR(50),
+    @Email VARCHAR(50),
+    @Phone VARCHAR(11),
+    @Address VARCHAR(100),
+    @CityId INT,
+    @PlanId INT,
+    @PlanOptionId INT,
+    @PlanDetailId INT,
+    @ProductId INT 
+AS
+BEGIN
+
+    IF (@PlanId = 0 OR @PlanDetailId = 0)
+    BEGIN
+        RETURN;
+    END;
+
+    DECLARE @NewNumber INT =
+            (
+                SELECT MAX(RIGHT(Id, 9))FROM dbo.Customers
+            ),
+            @Prefix VARCHAR(1) =
+            (
+                SELECT TOP 1 LEFT(ConnectionType, 1)FROM dbo.Plans WHERE Id = @PlanId
+            );
+    DECLARE @CusId NVARCHAR(20) =
+            (
+                SELECT dbo.GenerateEmpID(@Prefix, IIF(@NewNumber IS NULL, (SELECT 1), (@NewNumber + 1)), 9, '0')
+            );
+
+
+    DECLARE @InstallCharge DECIMAL(10, 3) =
+            (
+                SELECT TOP 1
+                       Amount + (Amount * 12.5 / 100)
+                FROM dbo.Plans
+                WHERE Id = @PlanId
+            ),
+            @MonthlyCharge DECIMAL(10, 3) =
+            (
+                SELECT TOP 1
+                       Price + (Price * 12.5 / 100)
+                FROM dbo.PlansDetail
+                WHERE Id = @PlanDetailId
+            ),
+            @ProductCharge DECIMAL(10, 3) =
+            (
+                SELECT Price FROM dbo.Products WHERE Id = @ProductId
+            );
+
+
+
+
+    DECLARE @TotalCharge DECIMAL(10, 3) = @InstallCharge + @MonthlyCharge + @ProductCharge;
+
+
+    INSERT INTO dbo.Customers
+    (
+        Id,
+        FirstName,
+        LastName,
+        Email,
+        Phone,
+        Address,
+        CityId,
+        State,
+        SecurityDeposit,
+        CreatedDate
+    )
+    VALUES
+    (   @CusId,     -- Id - varchar(12)
+        @FirstName, -- FirstName - nvarchar(50)
+        @LastName,  -- LastName - nvarchar(50)
+        @Email,     -- Email - varchar(100)
+        @Phone,     -- Phone - varchar(11)
+        @Address,   -- Address - nvarchar(100)
+        @CityId,    -- CityId - int
+        'Active',   -- State - nvarchar(50)
+        0,          -- SecurityDeposit - decimal(10, 2)
+        DEFAULT     -- CreatedDate - datetime
+        );
+
+    INSERT INTO dbo.CustomerPlan
+    (
+        CustomerId,
+        PlanId,
+        PlanOption,
+        PlanDetailId,
+		ProductId
+    )
+    VALUES
+    (   @CusId,        -- CustomerId - varchar(12)
+        @PlanId,       -- PlanId - int
+        @PlanOptionId, -- PlanOption - int
+        @PlanDetailId,  -- PlanDetailId - int
+		@ProductId
+        );
+
+
+    INSERT INTO dbo.Orders
+    (
+        CustomerID,
+        PlanDetailID,
+        ProductId,
+        OrderStatus,
+        PaymentMethod,
+        OrderDate,
+        DeliveryDate
+    )
+    VALUES
+    (   @CusId,        -- CustomerID - varchar(12)
+        @PlanDetailId, -- PlanDetailID - int
+        @ProductId,    -- ProductId - int
+        'Pending',     -- OrderStatus - varchar(50)
+        NULL,          -- PaymentMethod - nvarchar(50)
+        GETDATE(),     -- OrderDate - date
+        NULL           -- DeliveryDate - date
+        );
+
+    INSERT INTO dbo.Billing
+    (
+        CustomerID,
+        BillAmount,
+        BillingDate,
+        PaymentDate,
+        PaymentMethod
+    )
+    VALUES
+    (   @CusId,       -- CustomerID - varchar(12)
+        @TotalCharge, -- BillAmount - decimal(10, 2)
+        GETDATE(),    -- BillingDate - date
+        NULL,         -- PaymentDate - date
+        NULL          -- PaymentMethod - varchar(50)
+        );
+
+		SELECT @CusId AS CustomerId
+END;
+GO
+

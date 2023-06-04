@@ -11,6 +11,8 @@ public partial class PlansOption
 
     public string? OptionName { get; set; }
 
+    public virtual ICollection<CustomerPlan> CustomerPlans { get; set; } = new List<CustomerPlan>();
+
     public virtual Plan? Plan { get; set; }
 
     public virtual ICollection<PlansDetail> PlansDetails { get; set; } = new List<PlansDetail>();

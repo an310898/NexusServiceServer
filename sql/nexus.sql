@@ -33,6 +33,7 @@ CREATE TABLE Roles
     Id INT IDENTITY(1, 1) PRIMARY KEY,
     RoleName NVARCHAR(50) NOT NULL
 );
+
 CREATE TABLE Employees
 (
     Id INT PRIMARY KEY IDENTITY(1, 1),
@@ -49,7 +50,7 @@ CREATE TABLE Employees
     RoleId INT
         FOREIGN KEY REFERENCES dbo.Roles (Id),
     State VARCHAR(50),
-    CreatedDate DATETIME
+    CreatedDate DATE
         DEFAULT GETDATE()
 );
 
@@ -131,39 +132,40 @@ CREATE TABLE CustomerPlan
     Id INT IDENTITY(1, 1) PRIMARY KEY,
     CustomerId VARCHAR(12)
         FOREIGN KEY REFERENCES dbo.Customers (Id),
-    PlanDetailId INT
-        FOREIGN KEY REFERENCES dbo.PlansDetail (Id)
+		PlanId INT FOREIGN KEY REFERENCES dbo.Plans(id),
+		PlanOption INT FOREIGN KEY REFERENCES dbo.PlansOption(id),
+    PlanDetailId INT FOREIGN KEY REFERENCES dbo.PlansDetail (Id),
+	ProductId INT FOREIGN KEY REFERENCES dbo.Products(Id)
 );
 CREATE TABLE Billing
 (
     Id INT PRIMARY KEY IDENTITY(1, 1),
     CustomerID VARCHAR(12)
         FOREIGN KEY REFERENCES dbo.Customers (Id),
-    BillAmount DECIMAL(10, 2),
-    PaymentAmount DECIMAL(10, 2),
+    BillAmount DECIMAL(10, 3),
     BillingDate DATE,
     PaymentDate DATE,
     PaymentMethod VARCHAR(50)
 );
-CREATE TABLE BillDetails
-(
-    Id INT PRIMARY KEY IDENTITY(1, 1),
-    BillingID INT
-        FOREIGN KEY REFERENCES Billing (Id),
-    ProductId INT
-        FOREIGN KEY REFERENCES dbo.Products (Id),
-    Quantity INT,
-    TotalPrice DECIMAL(10, 2),
-);
-CREATE TABLE Payments
-(
-    PaymentID INT PRIMARY KEY IDENTITY(1, 1),
-    BillingID INT
-        FOREIGN KEY REFERENCES Billing (Id),
-    Amount DECIMAL(10, 2),
-    PaymentDate DATE
-        DEFAULT GETDATE(),
-);
+--drop TABLE BillDetails
+--(
+--    Id INT PRIMARY KEY IDENTITY(1, 1),
+--    BillingID INT
+--        FOREIGN KEY REFERENCES Billing (Id),
+--    ProductId INT
+--        FOREIGN KEY REFERENCES dbo.Products (Id),
+--    Quantity INT,
+--    TotalPrice DECIMAL(10, 2),
+--);
+--drop TABLE Payments
+--(
+--    PaymentID INT PRIMARY KEY IDENTITY(1, 1),
+--    BillingID INT
+--        FOREIGN KEY REFERENCES Billing (Id),
+--    Amount DECIMAL(10, 2),
+--    PaymentDate DATE
+--        DEFAULT GETDATE(),
+--);
 
 CREATE TABLE RetailStores
 (
@@ -758,6 +760,32 @@ VALUES
     1                              -- ManagerId - int
     );
 
+	SET IDENTITY_INSERT dbo.Products ON
+	INSERT INTO dbo.Products
+	(
+		Id,
+	    ProductName,
+	    ProductImageUrl,
+	    Description,
+	    Price,
+	    QuantityInStock,
+	    IsHidden,
+	    Manufacturer,
+	    ForPlan
+	)
+	VALUES
+	(	0,
+		NULL,    -- ProductName - varchar(100)
+	    NULL,    -- ProductImageUrl - nvarchar(max)
+	    NULL,    -- Description - varchar(max)
+	    0,    -- Price - decimal(10, 2)
+	    NULL,    -- QuantityInStock - int
+	    DEFAULT, -- IsHidden - bit
+	    NULL,    -- Manufacturer - varchar(100)
+	    NULL     -- ForPlan - int
+	    )
+	SET IDENTITY_INSERT dbo.Products OFF
+
 INSERT INTO dbo.Products
 (
     ProductName,
@@ -916,7 +944,94 @@ VALUES
     );
 
 
-	SELECT * FROM dbo.Employees
-	SELECT * FROM dbo.CityAvailable
-	SELECT * FROM dbo.RetailStores
-	SELECT * FROM dbo.Customers
+
+	INSERT INTO dbo.Employees
+(
+    FirstName,
+    LastName,
+    Email,
+    Phone,
+    Username,
+    Password,
+    DateOfBirth,
+    JoiningDate,
+    Salary,
+    RoleId,
+	State,
+    CreatedDate
+)
+VALUES
+(   'Nguyen',             -- FirstName - nvarchar(50)
+    'An 2',                 -- LastName - nvarchar(50)
+    'an310898@gmail.com', -- Email - varchar(100)
+    '0935263945',         -- Phone - varchar(20)
+    'anns3182',            -- Username - varchar(50)
+    '123123',             -- Password - varchar(50)
+    '1998-08-31',         -- DateOfBirth - date
+    GETDATE(),            -- JoiningDate - date
+    '1000',               -- Salary - decimal(10, 2)
+	2,
+	'Active',
+    DEFAULT               -- CreatedDate - datetime
+    );
+
+	INSERT INTO dbo.Employees
+(
+    FirstName,
+    LastName,
+    Email,
+    Phone,
+    Username,
+    Password,
+    DateOfBirth,
+    JoiningDate,
+    Salary,
+    RoleId,
+	State,
+    CreatedDate
+)
+VALUES
+(   'Nguyen',             -- FirstName - nvarchar(50)
+    'An3',                 -- LastName - nvarchar(50)
+    'an310898@gmail.com', -- Email - varchar(100)
+    '0935263945',         -- Phone - varchar(20)
+    'anns3183',            -- Username - varchar(50)
+    '123123',             -- Password - varchar(50)
+    '1998-08-31',         -- DateOfBirth - date
+    GETDATE(),            -- JoiningDate - date
+    '1000',               -- Salary - decimal(10, 2)
+	3,
+	'Active',
+    DEFAULT               -- CreatedDate - datetime
+    );
+	INSERT INTO dbo.Employees
+(
+    FirstName,
+    LastName,
+    Email,
+    Phone,
+    Username,
+    Password,
+    DateOfBirth,
+    JoiningDate,
+    Salary,
+    RoleId,
+	State,
+    CreatedDate
+)
+VALUES
+(   'Nguyen',             -- FirstName - nvarchar(50)
+    'An4',                 -- LastName - nvarchar(50)
+    'an310898@gmail.com', -- Email - varchar(100)
+    '0935263945',         -- Phone - varchar(20)
+    'anns3184',            -- Username - varchar(50)
+    '123123',             -- Password - varchar(50)
+    '1998-08-31',         -- DateOfBirth - date
+    GETDATE(),            -- JoiningDate - date
+    '1000',               -- Salary - decimal(10, 2)
+	4,
+	'Active',
+    DEFAULT               -- CreatedDate - datetime
+    );
+
+
