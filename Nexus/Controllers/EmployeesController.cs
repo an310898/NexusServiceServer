@@ -4,6 +4,7 @@ using System.Linq;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.Data.SqlClient;
 using Microsoft.EntityFrameworkCore;
 using Nexus.Models;
 
@@ -77,7 +78,7 @@ namespace Nexus.Controllers
                 }
             }
 
-            return NoContent();
+            return Ok(StatusCodes.Status200OK);
         }
 
         // POST: api/Employees
@@ -89,8 +90,26 @@ namespace Nexus.Controllers
           {
               return Problem("Entity set 'NexusContext.Employees'  is null.");
           }
+            List<Employee> employees = _context.Employees.ToList();
+
+            if (employees.Any(x => x.Phone == employee.Phone))
+            {
+                return Problem("Phone Duplicate");
+            }
+            if (employees.Any(x => x.Email == employee.Email))
+            {
+                return Problem("Email Duplicate");
+            }
+            if (employees.Any(x => x.Username == employee.Username))
+            {
+                return Problem("UserName Duplicate");
+            }
             _context.Employees.Add(employee);
+            
             await _context.SaveChangesAsync();
+           
+               
+            
 
             return CreatedAtAction("GetEmployee", new { id = employee.Id }, employee);
         }

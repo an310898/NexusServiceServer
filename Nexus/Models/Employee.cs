@@ -30,7 +30,7 @@ public partial class Employee
     public int? RoleId { get; set; }
 
     public string? State { get; set; }
-    
+
     public DateTime? CreatedDate { get; set; }
 
     public virtual ICollection<RetailStore> RetailStores { get; set; } = new List<RetailStore>();
