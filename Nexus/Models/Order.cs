@@ -9,10 +9,6 @@ public partial class Order
 
     public string? CustomerId { get; set; }
 
-    public int? PlanDetailId { get; set; }
-
-    public int? ProductId { get; set; }
-
     public string? OrderStatus { get; set; }
 
     public string? PaymentMethod { get; set; }
@@ -24,8 +20,4 @@ public partial class Order
     public virtual Customer? Customer { get; set; }
 
     public virtual ICollection<Feedback> Feedbacks { get; set; } = new List<Feedback>();
-
-    public virtual PlansDetail? PlanDetail { get; set; }
-
-    public virtual Product? Product { get; set; }
 }

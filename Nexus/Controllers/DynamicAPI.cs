@@ -15,7 +15,7 @@ namespace Nexus.Controllers
 
         public DynamicAPI(IConfiguration configuration)
         {
-            connectionString = configuration.GetConnectionString("NexusConn");
+            connectionString = configuration.GetConnectionString("NexusConn")!;
         }
 
 

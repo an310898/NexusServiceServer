@@ -31,7 +31,13 @@ public partial class Employee
 
     public string? State { get; set; }
 
+    public int? CityId { get; set; }
+
     public DateTime? CreatedDate { get; set; }
+
+    public virtual CityAvailable? City { get; set; }
+
+    public virtual ICollection<EmployeeToken> EmployeeTokens { get; set; } = new List<EmployeeToken>();
 
     public virtual ICollection<RetailStore> RetailStores { get; set; } = new List<RetailStore>();
 

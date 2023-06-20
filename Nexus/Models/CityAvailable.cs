@@ -15,5 +15,7 @@ public partial class CityAvailable
 
     public virtual ICollection<Customer> Customers { get; set; } = new List<Customer>();
 
+    public virtual ICollection<Employee> Employees { get; set; } = new List<Employee>();
+
     public virtual ICollection<RetailStore> RetailStores { get; set; } = new List<RetailStore>();
 }

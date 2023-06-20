@@ -5,15 +5,17 @@ namespace Nexus.Models;
 
 public partial class Feedback
 {
-    public int FeedbackId { get; set; }
+    public int Id { get; set; }
 
     public int? OrderId { get; set; }
 
     public string? CustomerId { get; set; }
 
-    public int? Rating { get; set; }
+    public string? Subject { get; set; }
 
     public string? Comments { get; set; }
+
+    public DateTime? CreatedDate { get; set; }
 
     public virtual Customer? Customer { get; set; }
 

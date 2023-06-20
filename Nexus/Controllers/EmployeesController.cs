@@ -29,7 +29,7 @@ namespace Nexus.Controllers
           {
               return NotFound();
           }
-            return await _context.Employees.Include(x=>x.Role).ToListAsync();
+            return await _context.Employees.Include(x=>x.Role).Include(x=>x.City).ToListAsync();
         }
 
         // GET: api/Employees/5
@@ -59,6 +59,7 @@ namespace Nexus.Controllers
             {
                 return BadRequest();
             }
+
 
             _context.Entry(employee).State = EntityState.Modified;
 
@@ -104,6 +105,8 @@ namespace Nexus.Controllers
             {
                 return Problem("UserName Duplicate");
             }
+            employee.JoiningDate = DateTime.Now;
+            employee.CreatedDate = DateTime.Now;
             _context.Employees.Add(employee);
             
             await _context.SaveChangesAsync();
@@ -115,24 +118,26 @@ namespace Nexus.Controllers
         }
 
         // DELETE: api/Employees/5
-        [HttpDelete("{id}")]
-        public async Task<IActionResult> DeleteEmployee(int id)
-        {
-            if (_context.Employees == null)
-            {
-                return NotFound();
-            }
-            var employee = await _context.Employees.FindAsync(id);
-            if (employee == null)
-            {
-                return NotFound();
-            }
+        //[HttpDelete("{id}")]
+        //public async Task<IActionResult> DeleteEmployee(int id)
+        //{
+        //    if (_context.Employees == null)
+        //    {
+        //        return NotFound();
+        //    }
+        //    var employee = await _context.Employees.FindAsync(id);
+        //    if (employee == null)
+        //    {
+        //        return NotFound();
+        //    }
+        //    employee.State = "Deactive";
+        //    _context.Entry(employee).State = EntityState.Modified;
 
-            _context.Employees.Remove(employee);
-            await _context.SaveChangesAsync();
+            
+        //    await _context.SaveChangesAsync();
 
-            return NoContent();
-        }
+        //    return NoContent();
+        //}
 
         private bool EmployeeExists(int id)
         {

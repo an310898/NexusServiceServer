@@ -23,9 +23,9 @@ public partial class Product
 
     public int? ForPlan { get; set; }
 
+    public DateTime? CreatedDate { get; set; }
+
     public virtual ICollection<CustomerPlan> CustomerPlans { get; set; } = new List<CustomerPlan>();
 
     public virtual Plan? ForPlanNavigation { get; set; }
-
-    public virtual ICollection<Order> Orders { get; set; } = new List<Order>();
 }

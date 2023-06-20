@@ -15,6 +15,10 @@ public partial class NexusContext : DbContext
     {
     }
 
+    public virtual DbSet<AllPlanDetailTable> AllPlanDetailTables { get; set; }
+
+    public virtual DbSet<Author> Authors { get; set; }
+
     public virtual DbSet<Billing> Billings { get; set; }
 
     public virtual DbSet<CityAvailable> CityAvailables { get; set; }
@@ -24,6 +28,8 @@ public partial class NexusContext : DbContext
     public virtual DbSet<CustomerPlan> CustomerPlans { get; set; }
 
     public virtual DbSet<Employee> Employees { get; set; }
+
+    public virtual DbSet<EmployeeToken> EmployeeTokens { get; set; }
 
     public virtual DbSet<Feedback> Feedbacks { get; set; }
 
@@ -41,14 +47,53 @@ public partial class NexusContext : DbContext
 
     public virtual DbSet<Role> Roles { get; set; }
 
+    public virtual DbSet<RoleAuthorization> RoleAuthorizations { get; set; }
+
     protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
         => optionsBuilder.UseSqlServer("name=NexusConn");
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
+        modelBuilder.Entity<AllPlanDetailTable>(entity =>
+        {
+            entity
+                .HasNoKey()
+                .ToView("AllPlanDetailTable");
+
+            entity.Property(e => e.Amount).HasColumnType("decimal(10, 2)");
+            entity.Property(e => e.CallCharges)
+                .HasMaxLength(300)
+                .IsUnicode(false);
+            entity.Property(e => e.ConnectionType)
+                .HasMaxLength(50)
+                .IsUnicode(false);
+            entity.Property(e => e.DataLimit).HasColumnType("decimal(10, 2)");
+            entity.Property(e => e.Description)
+                .HasMaxLength(200)
+                .IsUnicode(false);
+            entity.Property(e => e.Duration)
+                .HasMaxLength(20)
+                .IsUnicode(false);
+            entity.Property(e => e.OptionName)
+                .HasMaxLength(50)
+                .IsUnicode(false);
+            entity.Property(e => e.Price).HasColumnType("decimal(10, 2)");
+        });
+
+        modelBuilder.Entity<Author>(entity =>
+        {
+            entity.HasKey(e => e.Id).HasName("PK__Author__3214EC078427A754");
+
+            entity.ToTable("Author");
+
+            entity.Property(e => e.PermissionName)
+                .HasMaxLength(50)
+                .IsUnicode(false);
+        });
+
         modelBuilder.Entity<Billing>(entity =>
         {
-            entity.HasKey(e => e.Id).HasName("PK__Billing__3214EC07801FA6AB");
+            entity.HasKey(e => e.Id).HasName("PK__Billing__3214EC07D8A312FC");
 
             entity.ToTable("Billing");
 
@@ -70,7 +115,7 @@ public partial class NexusContext : DbContext
 
         modelBuilder.Entity<CityAvailable>(entity =>
         {
-            entity.HasKey(e => e.Id).HasName("PK__CityAvai__3214EC07FEBEE3F9");
+            entity.HasKey(e => e.Id).HasName("PK__CityAvai__3214EC07DE78C04C");
 
             entity.ToTable("CityAvailable");
 
@@ -83,7 +128,7 @@ public partial class NexusContext : DbContext
 
         modelBuilder.Entity<Customer>(entity =>
         {
-            entity.HasKey(e => e.Id).HasName("PK__Customer__3214EC07E90FF86A");
+            entity.HasKey(e => e.Id).HasName("PK__Customer__3214EC07EC772CEC");
 
             entity.Property(e => e.Id)
                 .HasMaxLength(12)
@@ -110,7 +155,7 @@ public partial class NexusContext : DbContext
 
         modelBuilder.Entity<CustomerPlan>(entity =>
         {
-            entity.HasKey(e => e.Id).HasName("PK__Customer__3214EC07ED4F9C92");
+            entity.HasKey(e => e.Id).HasName("PK__Customer__3214EC07DFE62EC5");
 
             entity.ToTable("CustomerPlan");
 
@@ -141,13 +186,13 @@ public partial class NexusContext : DbContext
 
         modelBuilder.Entity<Employee>(entity =>
         {
-            entity.HasKey(e => e.Id).HasName("PK__Employee__3214EC07A4C6A8D1");
+            entity.HasKey(e => e.Id).HasName("PK__Employee__3214EC07D278B3F9");
 
-            entity.HasIndex(e => e.Username, "UQ__Employee__536C85E4FB059868").IsUnique();
+            entity.HasIndex(e => e.Username, "UQ__Employee__536C85E4B571765B").IsUnique();
 
-            entity.HasIndex(e => e.Phone, "UQ__Employee__5C7E359ED6EE5CB3").IsUnique();
+            entity.HasIndex(e => e.Phone, "UQ__Employee__5C7E359EF39B9B24").IsUnique();
 
-            entity.HasIndex(e => e.Email, "UQ__Employee__A9D10534166E468D").IsUnique();
+            entity.HasIndex(e => e.Email, "UQ__Employee__A9D105340F15ADFB").IsUnique();
 
             entity.Property(e => e.CreatedDate)
                 .HasDefaultValueSql("(getdate())")
@@ -178,37 +223,63 @@ public partial class NexusContext : DbContext
                 .HasMaxLength(50)
                 .IsUnicode(false);
 
+            entity.HasOne(d => d.City).WithMany(p => p.Employees)
+                .HasForeignKey(d => d.CityId)
+                .HasConstraintName("FK__Employees__CityI__44FF419A");
+
             entity.HasOne(d => d.Role).WithMany(p => p.Employees)
                 .HasForeignKey(d => d.RoleId)
                 .HasConstraintName("FK__Employees__RoleI__440B1D61");
         });
 
+        modelBuilder.Entity<EmployeeToken>(entity =>
+        {
+            entity.HasKey(e => e.Id).HasName("PK__Employee__3214EC0709ACDFAE");
+
+            entity.ToTable("EmployeeToken");
+
+            entity.Property(e => e.Expired)
+                .HasDefaultValueSql("(dateadd(day,(1),getdate()))")
+                .HasColumnType("datetime");
+            entity.Property(e => e.Token)
+                .HasMaxLength(40)
+                .IsUnicode(false)
+                .HasDefaultValueSql("(replace(newid(),'-',''))");
+
+            entity.HasOne(d => d.Employee).WithMany(p => p.EmployeeTokens)
+                .HasForeignKey(d => d.EmployeeId)
+                .HasConstraintName("FK__EmployeeT__Emplo__6B24EA82");
+        });
+
         modelBuilder.Entity<Feedback>(entity =>
         {
-            entity.HasKey(e => e.FeedbackId).HasName("PK__Feedback__6A4BEDF62623AE04");
+            entity.HasKey(e => e.Id).HasName("PK__Feedback__3214EC0737794A1F");
 
             entity.ToTable("Feedback");
 
-            entity.Property(e => e.FeedbackId).HasColumnName("FeedbackID");
-            entity.Property(e => e.Comments).HasMaxLength(200);
+            entity.Property(e => e.Comments).HasMaxLength(1000);
+            entity.Property(e => e.CreatedDate)
+                .HasDefaultValueSql("(getdate())")
+                .HasColumnType("date");
             entity.Property(e => e.CustomerId)
                 .HasMaxLength(12)
                 .IsUnicode(false)
                 .HasColumnName("CustomerID");
             entity.Property(e => e.OrderId).HasColumnName("OrderID");
+            entity.Property(e => e.Subject).HasMaxLength(100);
 
             entity.HasOne(d => d.Customer).WithMany(p => p.Feedbacks)
                 .HasForeignKey(d => d.CustomerId)
-                .HasConstraintName("FK__Feedback__Custom__6754599E");
+                .HasConstraintName("FK__Feedback__Custom__68487DD7");
 
             entity.HasOne(d => d.Order).WithMany(p => p.Feedbacks)
                 .HasForeignKey(d => d.OrderId)
-                .HasConstraintName("FK__Feedback__OrderI__66603565");
+                .HasConstraintName("FK__Feedback__OrderI__6754599E");
         });
 
         modelBuilder.Entity<Order>(entity =>
         {
-            entity.HasKey(e => e.Id).HasName("PK__Orders__3214EC07169DABD6");
+            entity.HasKey(e => e.Id).HasName("PK__Orders__3214EC07F40E0482");
 
             entity.Property(e => e.CustomerId)
                 .HasMaxLength(12)
@@ -220,24 +291,15 @@ public partial class NexusContext : DbContext
                 .HasMaxLength(50)
                 .IsUnicode(false);
             entity.Property(e => e.PaymentMethod).HasMaxLength(50);
-            entity.Property(e => e.PlanDetailId).HasColumnName("PlanDetailID");
 
             entity.HasOne(d => d.Customer).WithMany(p => p.Orders)
                 .HasForeignKey(d => d.CustomerId)
-                .HasConstraintName("FK__Orders__Customer__5441852A");
-
-            entity.HasOne(d => d.PlanDetail).WithMany(p => p.Orders)
-                .HasForeignKey(d => d.PlanDetailId)
-                .HasConstraintName("FK__Orders__PlanDeta__5535A963");
-
-            entity.HasOne(d => d.Product).WithMany(p => p.Orders)
-                .HasForeignKey(d => d.ProductId)
-                .HasConstraintName("FK__Orders__ProductI__5629CD9C");
+                .HasConstraintName("FK__Orders__Customer__5629CD9C");
         });
 
         modelBuilder.Entity<Plan>(entity =>
         {
-            entity.HasKey(e => e.Id).HasName("PK__Plans__3214EC07B942F6ED");
+            entity.HasKey(e => e.Id).HasName("PK__Plans__3214EC0798F80445");
 
             entity.Property(e => e.Amount).HasColumnType("decimal(10, 2)");
             entity.Property(e => e.ConnectionType)
@@ -248,7 +310,7 @@ public partial class NexusContext : DbContext
 
         modelBuilder.Entity<PlansDetail>(entity =>
         {
-            entity.HasKey(e => e.Id).HasName("PK__PlansDet__3214EC07F92C5DD5");
+            entity.HasKey(e => e.Id).HasName("PK__PlansDet__3214EC077F0BBB57");
 
             entity.ToTable("PlansDetail");
 
@@ -266,12 +328,12 @@ public partial class NexusContext : DbContext
 
             entity.HasOne(d => d.PlansOption).WithMany(p => p.PlansDetails)
                 .HasForeignKey(d => d.PlansOptionId)
-                .HasConstraintName("FK__PlansDeta__Plans__4D94879B");
+                .HasConstraintName("FK__PlansDeta__Plans__4E88ABD4");
         });
 
         modelBuilder.Entity<PlansOption>(entity =>
         {
-            entity.HasKey(e => e.Id).HasName("PK__PlansOpt__3214EC0730B31211");
+            entity.HasKey(e => e.Id).HasName("PK__PlansOpt__3214EC07653771DC");
 
             entity.ToTable("PlansOption");
 
@@ -281,13 +343,16 @@ public partial class NexusContext : DbContext
 
             entity.HasOne(d => d.Plan).WithMany(p => p.PlansOptions)
                 .HasForeignKey(d => d.PlanId)
-                .HasConstraintName("FK__PlansOpti__PlanI__4AB81AF0");
+                .HasConstraintName("FK__PlansOpti__PlanI__4BAC3F29");
         });
 
         modelBuilder.Entity<Product>(entity =>
         {
-            entity.HasKey(e => e.Id).HasName("PK__Products__3214EC07B3BA8E78");
+            entity.HasKey(e => e.Id).HasName("PK__Products__3214EC07EF1B0EBE");
 
+            entity.Property(e => e.CreatedDate)
+                .HasDefaultValueSql("(getdate())")
+                .HasColumnType("date");
             entity.Property(e => e.Description).IsUnicode(false);
             entity.Property(e => e.IsHidden).HasDefaultValueSql("((0))");
             entity.Property(e => e.Manufacturer)
@@ -300,12 +365,12 @@ public partial class NexusContext : DbContext
 
             entity.HasOne(d => d.ForPlanNavigation).WithMany(p => p.Products)
                 .HasForeignKey(d => d.ForPlan)
-                .HasConstraintName("FK__Products__ForPla__5165187F");
+                .HasConstraintName("FK__Products__ForPla__52593CB8");
         });
 
         modelBuilder.Entity<RetailStore>(entity =>
         {
-            entity.HasKey(e => e.StoreId).HasName("PK__RetailSt__3B82F0E1D8653811");
+            entity.HasKey(e => e.StoreId).HasName("PK__RetailSt__3B82F0E1825EDC75");
 
             entity.Property(e => e.StoreId).HasColumnName("StoreID");
             entity.Property(e => e.Address).HasMaxLength(100);
@@ -328,9 +393,24 @@ public partial class NexusContext : DbContext
 
         modelBuilder.Entity<Role>(entity =>
         {
-            entity.HasKey(e => e.Id).HasName("PK__Roles__3214EC07BCB1229C");
+            entity.HasKey(e => e.Id).HasName("PK__Roles__3214EC076391444B");
 
             entity.Property(e => e.RoleName).HasMaxLength(50);
+        });
+
+        modelBuilder.Entity<RoleAuthorization>(entity =>
+        {
+            entity
+                .HasNoKey()
+                .ToTable("RoleAuthorization");
+
+            entity.HasOne(d => d.Authorization).WithMany()
+                .HasForeignKey(d => d.AuthorizationId)
+                .HasConstraintName("FK__RoleAutho__Autho__71D1E811");
+
+            entity.HasOne(d => d.Role).WithMany()
+                .HasForeignKey(d => d.RoleId)
+                .HasConstraintName("FK__RoleAutho__RoleI__70DDC3D8");
         });
 
         OnModelCreatingPartial(modelBuilder);
