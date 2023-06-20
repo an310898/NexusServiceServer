@@ -39,17 +39,18 @@ CREATE TABLE Employees
     Id INT PRIMARY KEY IDENTITY(1, 1),
     FirstName NVARCHAR(50),
     LastName NVARCHAR(50),
-    Email VARCHAR(100),
-    Phone VARCHAR(20),
-    Username VARCHAR(50),
+    Email VARCHAR(100) UNIQUE,
+    Phone VARCHAR(20) UNIQUE,
+    Username VARCHAR(50) UNIQUE,
     Password VARCHAR(50),
     DateOfBirth DATE,
     Gender VARCHAR(10),
-    JoiningDate DATE,
+    JoiningDate DATE DEFAULT GETDATE(),
     Salary DECIMAL(10, 2),
     RoleId INT
         FOREIGN KEY REFERENCES dbo.Roles (Id),
     State VARCHAR(50),
+	CityId INT FOREIGN KEY REFERENCES dbo.CityAvailable(id),
     CreatedDate DATE
         DEFAULT GETDATE()
 );
@@ -96,7 +97,8 @@ CREATE TABLE Products
         DEFAULT 0,
     Manufacturer VARCHAR(100),
     ForPlan INT
-        FOREIGN KEY REFERENCES dbo.Plans (Id)
+        FOREIGN KEY REFERENCES dbo.Plans (Id),
+	CreatedDate DATE DEFAULT GETDATE()
 );
 
 CREATE TABLE Orders
@@ -104,10 +106,6 @@ CREATE TABLE Orders
     Id INT IDENTITY(1, 1) PRIMARY KEY,
     CustomerID VARCHAR(12)
         FOREIGN KEY REFERENCES dbo.Customers (Id),
-    PlanDetailID INT
-        FOREIGN KEY REFERENCES dbo.PlansDetail (Id),
-    ProductId INT
-        FOREIGN KEY REFERENCES dbo.Products (Id) NULL,
     OrderStatus VARCHAR(50),
     PaymentMethod NVARCHAR(50),
     OrderDate DATE,
@@ -115,16 +113,7 @@ CREATE TABLE Orders
 );
 
 
---CREATE TABLE OrderDetails
---(
---    Id INT PRIMARY KEY IDENTITY(1, 1),
---    OrderId INT
---        FOREIGN KEY REFERENCES dbo.Orders (Id),
---    ProductId INT
---        FOREIGN KEY REFERENCES dbo.Products (Id),
---    Quantity INT NOT NULL
---        DEFAULT 1
---);
+
 
 
 CREATE TABLE CustomerPlan
@@ -181,13 +170,35 @@ CREATE TABLE RetailStores
 
 CREATE TABLE Feedback
 (
-    FeedbackID INT PRIMARY KEY IDENTITY(1, 1),
+    Id INT PRIMARY KEY IDENTITY(1, 1),
     OrderID INT,
     CustomerID VARCHAR(12),
-    Rating INT,
-    Comments NVARCHAR(200),
+	[Subject] NVARCHAR(100),
+    Comments NVARCHAR(1000),
+	CreatedDate DATE DEFAULT GETDATE(),
     FOREIGN KEY (OrderID) REFERENCES Orders (Id),
     FOREIGN KEY (CustomerID) REFERENCES Customers (Id)
+);
+
+CREATE TABLE EmployeeToken (
+	Id INT IDENTITY(1,1) PRIMARY KEY,
+	EmployeeId INT FOREIGN KEY REFERENCES dbo.Employees(Id),
+	Token VARCHAR(40) DEFAULT REPLACE(NEWID(),'-',''),
+	Expired DATETIME DEFAULT DATEADD(DAY,1,GETDATE())
+)
+
+
+CREATE TABLE Author
+(
+    Id INT PRIMARY KEY IDENTITY(1, 1),
+    PermissionName VARCHAR(50)
+);
+CREATE TABLE RoleAuthorization
+(
+    RoleId INT
+        FOREIGN KEY REFERENCES dbo.Roles (Id),
+    AuthorizationId INT
+        FOREIGN KEY REFERENCES dbo.Author (Id)
 );
 
 INSERT INTO dbo.CityAvailable
@@ -256,6 +267,7 @@ INSERT INTO dbo.Employees
     DateOfBirth,
     JoiningDate,
     Salary,
+	CityId,
     RoleId,
 	State,
     CreatedDate
@@ -271,6 +283,103 @@ VALUES
     GETDATE(),            -- JoiningDate - date
     '1000',               -- Salary - decimal(10, 2)
 	1,
+	1,
+	'Active',
+    DEFAULT               -- CreatedDate - datetime
+    );
+
+	INSERT INTO dbo.Employees
+(
+    FirstName,
+    LastName,
+    Email,
+    Phone,
+    Username,
+    Password,
+    DateOfBirth,
+    JoiningDate,
+    Salary,
+	CityId,
+    RoleId,
+	State,
+    CreatedDate
+)
+VALUES
+(   'Nguyen',             -- FirstName - nvarchar(50)
+    'accountant',                 -- LastName - nvarchar(50)
+    'accountant@gmail.com', -- Email - varchar(100)
+    '0935263944',         -- Phone - varchar(20)
+    'accountant',            -- Username - varchar(50)
+    '123123',             -- Password - varchar(50)
+    '1998-08-31',         -- DateOfBirth - date
+    GETDATE(),            -- JoiningDate - date
+    '1000',               -- Salary - decimal(10, 2)
+	1,
+	2,
+	'Active',
+    DEFAULT               -- CreatedDate - datetime
+    );
+
+INSERT INTO dbo.Employees
+(
+    FirstName,
+    LastName,
+    Email,
+    Phone,
+    Username,
+    Password,
+    DateOfBirth,
+    JoiningDate,
+    Salary,
+	CityId,
+    RoleId,
+	State,
+    CreatedDate
+)
+VALUES
+(   'Nguyen',             -- FirstName - nvarchar(50)
+    'technical',                 -- LastName - nvarchar(50)
+    'technical@gmail.com', -- Email - varchar(100)
+    '0935263943',         -- Phone - varchar(20)
+    'technical',            -- Username - varchar(50)
+    '123123',             -- Password - varchar(50)
+    '1998-08-31',         -- DateOfBirth - date
+    GETDATE(),            -- JoiningDate - date
+    '1000',               -- Salary - decimal(10, 2)
+	1,
+	3,
+	'Active',
+    DEFAULT               -- CreatedDate - datetime
+    );
+
+INSERT INTO dbo.Employees
+(
+    FirstName,
+    LastName,
+    Email,
+    Phone,
+    Username,
+    Password,
+    DateOfBirth,
+    JoiningDate,
+    Salary,
+	CityId,
+    RoleId,
+	State,
+    CreatedDate
+)
+VALUES
+(   'Nguyen',             -- FirstName - nvarchar(50)
+    'store',                 -- LastName - nvarchar(50)
+    'store@gmail.com', -- Email - varchar(100)
+    '0935263941',         -- Phone - varchar(20)
+    'store',            -- Username - varchar(50)
+    '123123',             -- Password - varchar(50)
+    '1998-08-31',         -- DateOfBirth - date
+    GETDATE(),            -- JoiningDate - date
+    '1000',               -- Salary - decimal(10, 2)
+	1,
+	4,
 	'Active',
     DEFAULT               -- CreatedDate - datetime
     );
@@ -943,95 +1052,1092 @@ VALUES
     3                                                                                                                                                                                                                                                                                                                                                                                                                                                                                               -- ForPlan - int
     );
 
-
-
-	INSERT INTO dbo.Employees
+	
+INSERT INTO dbo.Author
 (
-    FirstName,
-    LastName,
-    Email,
-    Phone,
-    Username,
-    Password,
-    DateOfBirth,
-    JoiningDate,
-    Salary,
-    RoleId,
-	State,
-    CreatedDate
+    PermissionName
 )
 VALUES
-(   'Nguyen',             -- FirstName - nvarchar(50)
-    'An 2',                 -- LastName - nvarchar(50)
-    'an310898@gmail.com', -- Email - varchar(100)
-    '0935263945',         -- Phone - varchar(20)
-    'anns3182',            -- Username - varchar(50)
-    '123123',             -- Password - varchar(50)
-    '1998-08-31',         -- DateOfBirth - date
-    GETDATE(),            -- JoiningDate - date
-    '1000',               -- Salary - decimal(10, 2)
-	2,
-	'Active',
-    DEFAULT               -- CreatedDate - datetime
+('Employee' -- PermissionName - varchar(50)
     );
 
-	INSERT INTO dbo.Employees
+INSERT INTO dbo.Author
 (
-    FirstName,
-    LastName,
-    Email,
-    Phone,
-    Username,
-    Password,
-    DateOfBirth,
-    JoiningDate,
-    Salary,
-    RoleId,
-	State,
-    CreatedDate
+    PermissionName
 )
 VALUES
-(   'Nguyen',             -- FirstName - nvarchar(50)
-    'An3',                 -- LastName - nvarchar(50)
-    'an310898@gmail.com', -- Email - varchar(100)
-    '0935263945',         -- Phone - varchar(20)
-    'anns3183',            -- Username - varchar(50)
-    '123123',             -- Password - varchar(50)
-    '1998-08-31',         -- DateOfBirth - date
-    GETDATE(),            -- JoiningDate - date
-    '1000',               -- Salary - decimal(10, 2)
-	3,
-	'Active',
-    DEFAULT               -- CreatedDate - datetime
+('Customer' -- PermissionName - varchar(50)
     );
-	INSERT INTO dbo.Employees
+
+INSERT INTO dbo.Author
 (
-    FirstName,
-    LastName,
-    Email,
-    Phone,
-    Username,
-    Password,
-    DateOfBirth,
-    JoiningDate,
-    Salary,
-    RoleId,
-	State,
-    CreatedDate
+    PermissionName
 )
 VALUES
-(   'Nguyen',             -- FirstName - nvarchar(50)
-    'An4',                 -- LastName - nvarchar(50)
-    'an310898@gmail.com', -- Email - varchar(100)
-    '0935263945',         -- Phone - varchar(20)
-    'anns3184',            -- Username - varchar(50)
-    '123123',             -- Password - varchar(50)
-    '1998-08-31',         -- DateOfBirth - date
-    GETDATE(),            -- JoiningDate - date
-    '1000',               -- Salary - decimal(10, 2)
-	4,
-	'Active',
-    DEFAULT               -- CreatedDate - datetime
+('Bill' -- PermissionName - varchar(50)
+    );
+INSERT INTO dbo.Author
+(
+    PermissionName
+)
+VALUES
+('Order' -- PermissionName - varchar(50)
+    );
+INSERT INTO dbo.Author
+(
+    PermissionName
+)
+VALUES
+('Product' -- PermissionName - varchar(50)
+    );
+INSERT INTO dbo.Author
+(
+    PermissionName
+)
+VALUES
+('Retail Store' -- PermissionName - varchar(50)
+    );
+INSERT INTO dbo.Author
+(
+    PermissionName
+)
+VALUES
+('Available City' -- PermissionName - varchar(50)
+    );
+INSERT INTO dbo.Author
+(
+    PermissionName
+)
+VALUES
+('Feedback' -- PermissionName - varchar(50)
+    )
+INSERT INTO dbo.RoleAuthorization
+(
+    RoleId,
+    AuthorizationId
+)
+SELECT 1,
+       Id
+FROM Author;
+
+
+USE NEXUS;
+GO
+
+
+
+CREATE PROCEDURE getAllEmp
+AS
+BEGIN
+    SELECT Id,
+           FirstName,
+           LastName,
+           Email,
+           Phone,
+           Username,
+           Password,
+           DateOfBirth,
+           Gender,
+           JoiningDate,
+           State,
+           Salary,
+           CreatedDate
+    FROM dbo.Employees;
+END;
+GO
+
+CREATE PROCEDURE getAllPlan
+AS
+BEGIN
+    SELECT P.Id,
+           P.ConnectionType,
+           P.Amount
+    FROM dbo.Plans P;
+
+END;
+
+GO
+CREATE PROCEDURE checkAvailableZipCode @ZipOrCityName VARCHAR(50)
+AS
+BEGIN
+    IF EXISTS
+    (
+        SELECT TOP 1
+               *
+        FROM dbo.CityAvailable
+        WHERE PostalCode = @ZipOrCityName
+              OR Name = @ZipOrCityName
+                 AND IsHidden = 0
+    )
+    BEGIN
+        SELECT 1 AS result;
+        RETURN;
+    END;
+
+    SELECT 0 AS result;
+
+
+END;
+GO
+
+CREATE PROCEDURE getPlanOptionByPlanId @PlanId INT
+AS
+BEGIN
+    SELECT Id,
+           OptionName
+    FROM dbo.PlansOption
+    WHERE PlanId = @PlanId;
+END;
+
+GO
+
+CREATE PROCEDURE getPlanDetailByPlanOptionId @PlanOptionId INT
+AS
+BEGIN
+    SELECT *
+    FROM dbo.PlansDetail
+    WHERE PlansOptionId = @PlanOptionId;
+END;
+
+GO
+
+CREATE PROCEDURE getProductForPlan @PlanId INT
+AS
+BEGIN
+    SELECT Id,
+           ProductName,
+           ProductImageUrl,
+           Description,
+           Price,
+           QuantityInStock,
+           IsHidden,
+           Manufacturer
+    FROM dbo.Products
+    WHERE ForPlan = @PlanId;
+END;
+
+GO
+
+CREATE PROCEDURE getAvailableCity
+AS
+BEGIN
+    SELECT Id,
+           Name
+    FROM dbo.CityAvailable
+    WHERE IsHidden = 0;
+END;
+GO
+
+GO
+
+CREATE FUNCTION GenerateCusID
+(
+    @Prefix NVARCHAR(10),
+    @Id INT,
+    @Length INT,
+    @PaddingChar CHAR(1) = '0'
+)
+RETURNS NVARCHAR(MAX)
+AS
+BEGIN
+
+    RETURN
+    (
+        SELECT @Prefix + RIGHT(REPLICATE(@PaddingChar, @Length) + CAST(@Id AS NVARCHAR(10)), @Length)
     );
 
+END;
+GO
 
+CREATE PROCEDURE addNewCustomer
+    @FirstName NVARCHAR(50),
+    @LastName NVARCHAR(50),
+    @Email VARCHAR(50),
+    @Phone VARCHAR(11),
+    @Address NVARCHAR(100),
+    @CityId INT,
+    @PlanId INT,
+    @PlanOptionId INT,
+    @PlanDetailId INT,
+    @ProductId INT,
+    @PaymentMethod VARCHAR(50)
+AS
+BEGIN
+
+    IF (@PlanId = 0 OR @PlanDetailId = 0)
+    BEGIN
+        RETURN;
+    END;
+
+    DECLARE @NewNumber INT =
+            (
+                SELECT MAX(RIGHT(Id, 9))FROM dbo.Customers
+            ),
+            @Prefix VARCHAR(1) =
+            (
+                SELECT TOP 1 LEFT(ConnectionType, 1)FROM dbo.Plans WHERE Id = @PlanId
+            );
+    DECLARE @CusId NVARCHAR(20) =
+            (
+                SELECT dbo.GenerateCusID(@Prefix, IIF(@NewNumber IS NULL, (SELECT 1), (@NewNumber + 1)), 9, '0')
+            );
+
+
+    DECLARE @InstallCharge DECIMAL(10, 3) =
+            (
+                SELECT TOP 1
+                       Amount + (Amount * 12.5 / 100)
+                FROM dbo.Plans
+                WHERE Id = @PlanId
+            ),
+            @MonthlyCharge DECIMAL(10, 3) =
+            (
+                SELECT TOP 1
+                       Price + (Price * 12.5 / 100)
+                FROM dbo.PlansDetail
+                WHERE Id = @PlanDetailId
+            ),
+            @ProductCharge DECIMAL(10, 3) =
+            (
+                SELECT Price FROM dbo.Products WHERE Id = @ProductId
+            );
+
+
+
+
+    DECLARE @TotalCharge DECIMAL(10, 3) = @InstallCharge + @ProductCharge;
+
+
+    INSERT INTO dbo.Customers
+    (
+        Id,
+        FirstName,
+        LastName,
+        Email,
+        Phone,
+        Address,
+        CityId,
+        State,
+        SecurityDeposit,
+        CreatedDate
+    )
+    VALUES
+    (   @CusId,     -- Id - varchar(12)
+        @FirstName, -- FirstName - nvarchar(50)
+        @LastName,  -- LastName - nvarchar(50)
+        @Email,     -- Email - varchar(100)
+        @Phone,     -- Phone - varchar(11)
+        @Address,   -- Address - nvarchar(100)
+        @CityId,    -- CityId - int
+        'Active',   -- State - nvarchar(50)
+        0,          -- SecurityDeposit - decimal(10, 2)
+        DEFAULT     -- CreatedDate - datetime
+        );
+
+    INSERT INTO dbo.CustomerPlan
+    (
+        CustomerId,
+        PlanId,
+        PlanOption,
+        PlanDetailId,
+        ProductId
+    )
+    VALUES
+    (   @CusId,        -- CustomerId - varchar(12)
+        @PlanId,       -- PlanId - int
+        @PlanOptionId, -- PlanOption - int
+        @PlanDetailId, -- PlanDetailId - int
+        @ProductId);
+
+
+    INSERT INTO dbo.Orders
+    (
+        CustomerID,
+        OrderStatus,
+        PaymentMethod,
+        OrderDate,
+        DeliveryDate
+    )
+    VALUES
+    (   @CusId,         -- CustomerID - varchar(12)
+        'Pending',      -- OrderStatus - varchar(50)
+        @PaymentMethod, -- PaymentMethod - nvarchar(50)
+        GETDATE(),      -- OrderDate - date
+        NULL            -- DeliveryDate - date
+        );
+
+    INSERT INTO dbo.Billing
+    (
+        CustomerID,
+        BillAmount,
+        BillingDate,
+        PaymentDate,
+        PaymentMethod
+    )
+    VALUES
+    (   @CusId,                                                               -- CustomerID - varchar(12)
+        @TotalCharge,                                                         -- BillAmount - decimal(10, 2)
+        GETDATE(),                                                            -- BillingDate - date
+        IIF(@PaymentMethod = 'Cash On Delivery', (SELECT NULL), (GETDATE())), -- PaymentDate - date
+        @PaymentMethod                                                        -- PaymentMethod - varchar(50)
+        );
+
+    SELECT @CusId AS CustomerId;
+END;
+GO
+
+
+
+CREATE PROCEDURE updateCustomerInfo
+    @id VARCHAR(11),
+    @firstName NVARCHAR(50),
+    @lastName NVARCHAR(50),
+    @email VARCHAR(150),
+    @phone VARCHAR(11),
+    @address NVARCHAR(MAX),
+    @state VARCHAR(50)
+AS
+BEGIN
+    UPDATE dbo.Customers
+    SET FirstName = @firstName,
+        LastName = @lastName,
+        Email = @email,
+        Phone = @phone,
+        Address = @address,
+        State = @state
+    WHERE Id = @id;
+
+    SELECT 1 AS result;
+END;
+
+GO
+
+CREATE PROCEDURE getCustomerPlan @CustomerId VARCHAR(12)
+AS
+BEGIN
+    SELECT CustomerId,
+           PlanId,
+           PlanOption,
+           PlanDetailId,
+           ProductId
+    FROM dbo.CustomerPlan
+    WHERE CustomerId = @CustomerId;
+END;
+GO
+
+
+CREATE PROCEDURE updateCustomerPlan
+    @customerId VARCHAR(12),
+    @planOptionId INT,
+    @planDetailId INT
+AS
+BEGIN
+    UPDATE dbo.CustomerPlan
+    SET PlanOption = @planOptionId,
+        PlanDetailId = @planDetailId
+    WHERE CustomerId = @customerId;
+
+    SELECT 1 AS res;
+END;
+
+GO
+CREATE VIEW AllPlanDetailTable
+AS
+SELECT P.Id AS PlanId,
+       P.ConnectionType,
+       P.Amount,
+       P.IsHidden,
+       PO.Id AS PlanOptionId,
+       PO.OptionName,
+       PD.Id AS PlanDetailId,
+       PD.Description,
+       PD.Duration,
+       PD.DataLimit,
+       PD.CallCharges,
+       PD.Price
+FROM dbo.Plans P
+    JOIN dbo.PlansOption PO
+        ON PO.PlanId = P.Id
+    JOIN dbo.PlansDetail PD
+        ON PD.PlansOptionId = PO.Id;
+
+GO
+
+CREATE PROCEDURE getCustomerOrderDetail
+AS
+BEGIN
+    SELECT O.CustomerID,
+           O.OrderStatus,
+           O.PaymentMethod,
+           O.OrderDate,
+           O.DeliveryDate,
+           C.FirstName,
+           C.LastName,
+           C.Address,
+           C.Phone,
+           [Plan].ConnectionType,
+           [Plan].OptionName,
+           [Plan].Description,
+           P.ProductName,
+           B.BillAmount
+    FROM dbo.Orders O
+        LEFT JOIN dbo.Billing B
+            ON O.CustomerID = B.CustomerID
+        LEFT JOIN dbo.CustomerPlan CP
+            ON O.CustomerID = CP.CustomerId
+        LEFT JOIN dbo.AllPlanDetailTable [Plan]
+            ON CP.PlanDetailId = [Plan].PlanDetailId
+        LEFT JOIN dbo.Products P
+            ON CP.ProductId = P.Id
+        LEFT JOIN dbo.Customers C
+            ON O.CustomerID = C.Id;
+END;
+GO
+
+CREATE PROCEDURE updateCustomerOrderStatus
+    @CusId VARCHAR(12),
+    @Status VARCHAR(50)
+AS
+BEGIN
+    UPDATE dbo.Orders
+    SET OrderStatus = @Status
+    WHERE CustomerID = @CusId;
+
+    IF (@Status = 'Completed')
+    BEGIN
+        UPDATE dbo.Customers
+        SET State = 'Active'
+        WHERE Id = @CusId;
+        UPDATE dbo.Billing
+        SET PaymentDate = GETDATE()
+        WHERE PaymentMethod = 'Cash On Delivery'
+              AND CustomerID = @CusId;
+    END;
+    IF (@Status = 'Cancelled')
+    BEGIN
+        UPDATE dbo.Customers
+        SET State = 'Cancelled'
+        WHERE Id = @CusId;
+
+    END;
+    SELECT 1 AS res;
+END;
+
+GO
+
+
+CREATE PROCEDURE EmpLogin
+    @UserName VARCHAR(50),
+    @Password VARCHAR(50)
+AS
+BEGIN
+    DECLARE @EmpId INT =
+            (
+                SELECT TOP 1
+                       Id
+                FROM dbo.Employees
+                WHERE Username = @UserName
+                      AND Password = @Password
+                      AND State = 'Active'
+            );
+
+    IF EXISTS
+    (
+        SELECT TOP 1
+               Id
+        FROM dbo.EmployeeToken
+        WHERE EmployeeId = @EmpId
+    )
+    BEGIN
+        UPDATE dbo.EmployeeToken
+        SET Expired = DATEADD(DAY, 1, GETDATE())
+        WHERE EmployeeId = @EmpId;
+
+        SELECT 1 AS Result,
+               EmployeeId,
+               Token,
+               Expired
+        FROM dbo.EmployeeToken
+        WHERE EmployeeId = @EmpId;
+        RETURN;
+    END;
+
+
+
+    IF (@EmpId IS NOT NULL AND @EmpId > 0)
+    BEGIN
+        INSERT INTO dbo.EmployeeToken
+        (
+            EmployeeId,
+            Token,
+            Expired
+        )
+        VALUES
+        (   @EmpId,  -- EmployeeId - int
+            DEFAULT, -- Token - varchar
+            DEFAULT  -- Expired - datetime
+            );
+
+        SELECT 1 AS Result,
+               EmployeeId,
+               Token,
+               Expired
+        FROM dbo.EmployeeToken
+        WHERE EmployeeId = @EmpId;
+
+
+    END;
+    ELSE
+    BEGIN
+        SELECT 0 AS Result;
+    END;
+END;
+
+GO
+
+CREATE PROCEDURE checkToken @Token VARCHAR(40)
+AS
+BEGIN
+    SELECT TOP 1
+           E.FirstName,
+           E.LastName,
+           E.RoleId,
+           R.RoleName,
+           (
+               SELECT A.PermissionName
+               FROM RoleAuthorization RA
+                   JOIN dbo.Author A
+                       ON A.Id = RA.AuthorizationId
+               WHERE RA.RoleId = E.RoleId
+               FOR JSON PATH
+           ) AS Permission
+    FROM dbo.EmployeeToken ET
+        JOIN dbo.Employees E
+            ON ET.EmployeeId = E.Id
+        LEFT JOIN dbo.Roles R
+            ON E.RoleId = R.Id
+    WHERE Token = @Token
+          AND GETDATE() < ET.Expired;
+
+END;
+GO
+
+CREATE PROCEDURE getRoleAuth @RoleId INT
+AS
+BEGIN
+    SELECT RA.RoleId,
+           RA.AuthorizationId,
+           A.PermissionName
+    FROM dbo.RoleAuthorization RA
+        JOIN dbo.Author A
+            ON RA.AuthorizationId = A.Id
+    WHERE RoleId = @RoleId;
+END;
+GO
+
+CREATE PROCEDURE updateRoleAuth
+    @RoleId INT,
+    @arrRole VARCHAR(MAX)
+AS
+BEGIN
+    --DECLARE @arrRole VARCHAR(max) = '1,2,3,4',@RoleId INT = 1
+
+    DELETE FROM dbo.RoleAuthorization
+    WHERE RoleId = @RoleId;
+
+
+    IF (LEN(@arrRole) = 0)
+    BEGIN
+        SELECT 1 AS result;
+        RETURN;
+    END;
+
+    INSERT INTO dbo.RoleAuthorization
+    (
+        RoleId,
+        AuthorizationId
+    )
+    SELECT @RoleId,
+           value
+    FROM STRING_SPLIT(@arrRole, ',');
+
+    SELECT 1 AS result;
+END;
+
+GO
+
+CREATE PROCEDURE getAllBill
+AS
+BEGIN
+    SELECT B.CustomerID,
+           C.FirstName,
+           C.LastName,
+           C.Address,
+           C.Phone,
+           B.BillAmount,
+           B.BillingDate,
+           IIF(B.PaymentDate IS NULL, (SELECT CAST('' AS VARCHAR(1))), (SELECT CAST(B.PaymentDate AS VARCHAR(30)))) AS PaymentDate,
+           IIF(B.PaymentDate IS NULL, (SELECT 'Unpaid'), (SELECT 'Paid')) AS IsPaid
+    FROM dbo.Billing B
+        JOIN dbo.CustomerPlan CP
+            ON B.CustomerID = CP.CustomerId
+        JOIN dbo.Customers C
+            ON C.Id = B.CustomerID
+    WHERE C.State = 'Active';
+END;
+
+GO
+
+CREATE PROCEDURE getAllProduct
+AS
+BEGIN
+    SELECT P.Id,
+           P.ProductName,
+           P.ProductImageUrl,
+           P.Description,
+           P.Price,
+           P.QuantityInStock,
+           P.IsHidden,
+           P.Manufacturer,
+           Pl.ConnectionType
+    FROM dbo.Products P
+        JOIN dbo.Plans Pl
+            ON P.ForPlan = Pl.Id
+    WHERE P.Id > 0;
+END;
+GO
+
+CREATE PROCEDURE getProductInfo @ProductId INT
+AS
+BEGIN
+    SELECT P.Id,
+           P.ProductName,
+           P.ProductImageUrl,
+           P.Description,
+           P.Price,
+           P.QuantityInStock,
+           P.IsHidden,
+           P.Manufacturer,
+           P.ForPlan
+    FROM dbo.Products P
+    WHERE P.Id = @ProductId;
+END;
+GO
+
+CREATE PROCEDURE CreateProduct
+    @ProductName VARCHAR(100),
+    @ProductImageUrl NVARCHAR(MAX),
+    @Description VARCHAR(MAX),
+    @Price DECIMAL(20, 10),
+    @QuantityInStock INT,
+    @Manufacturer VARCHAR(100),
+    @ForPlan INT
+AS
+BEGIN
+    INSERT INTO dbo.Products
+    (
+        ProductName,
+        ProductImageUrl,
+        Description,
+        Price,
+        QuantityInStock,
+        IsHidden,
+        Manufacturer,
+        ForPlan
+    )
+    VALUES
+    (   @ProductName,     -- ProductName - varchar(100)
+        @ProductImageUrl, -- ProductImageUrl - nvarchar(max)
+        @Description,     -- Description - varchar(max)
+        @Price,           -- Price - decimal(10, 2)
+        @QuantityInStock, -- QuantityInStock - int
+        DEFAULT,          -- IsHidden - bit
+        @Manufacturer,    -- Manufacturer - varchar(100)
+        @ForPlan          -- ForPlan - int
+        );
+
+    SELECT 1 AS Result;
+END;
+GO
+
+
+CREATE PROCEDURE updateProduct
+    @ProductId INT,
+    @ProductName VARCHAR(100),
+    @ProductImageUrl NVARCHAR(MAX),
+    @Description VARCHAR(MAX),
+    @Price DECIMAL(10, 5),
+    @QuantityInStock INT,
+    @Manufacturer VARCHAR(100),
+    @ForPlan INT
+AS
+BEGIN
+    UPDATE dbo.Products
+    SET ProductName = @ProductName,
+        ProductImageUrl = @ProductImageUrl,
+        Description = @Description,
+        Price = @Price,
+        QuantityInStock = @QuantityInStock,
+        Manufacturer = @Manufacturer,
+        ForPlan = @ForPlan
+    WHERE Id = @ProductId;
+
+    SELECT 1 AS Result;
+
+END;
+
+GO
+
+CREATE PROCEDURE editEmp
+    @id INT,
+    @firstName NVARCHAR(50),
+    @lastName NVARCHAR(50),
+    @email VARCHAR(100),
+    @phone VARCHAR(11),
+    @userName VARCHAR(50),
+    @password VARCHAR(50),
+    @salary DECIMAL(10, 2),
+    @roleId INT,
+    @dateOfBirth DATE,
+    @cityId INT,
+    @state VARCHAR(50)
+AS
+BEGIN
+    UPDATE dbo.Employees
+    SET FirstName = @firstName,
+        LastName = @lastName,
+        Email = @email,
+        Phone = @phone,
+        Username = @userName,
+        Password = @password,
+        Salary = @salary,
+        RoleId = @roleId,
+        DateOfBirth = @dateOfBirth,
+        CityId = @cityId,
+        State = @state
+    WHERE Id = @id;
+
+    SELECT 1 AS Result;
+END;
+GO
+
+CREATE PROCEDURE getAllRetailStore
+AS
+BEGIN
+    SELECT RS.StoreID,
+           RS.StoreName,
+           RS.Address,
+           RS.Phone,
+           C.Name,
+           RS.State,
+           E.FirstName + ' ' + E.LastName AS FullName
+    FROM dbo.RetailStores RS
+        JOIN dbo.Employees E
+            ON RS.ManagerId = E.Id
+        JOIN dbo.CityAvailable C
+            ON RS.CityId = C.Id;
+END;
+
+GO
+
+CREATE PROCEDURE addNewStore
+    @StoreName NVARCHAR(100),
+    @Address NVARCHAR(100),
+    @Phone VARCHAR(20),
+    @CityId INT,
+    @ManagerId INT
+AS
+BEGIN
+    INSERT INTO dbo.RetailStores
+    (
+        StoreName,
+        Address,
+        Phone,
+        CityId,
+        State,
+        ManagerId
+    )
+    VALUES
+    (   @StoreName, -- StoreName - nvarchar(100)
+        @Address,   -- Address - nvarchar(100)
+        @Phone,     -- Phone - varchar(20)
+        @CityId,    -- CityId - int
+        'Active',   -- State - varchar(50)
+        @ManagerId  -- ManagerId - int
+        );
+
+
+    SELECT 1 AS Result;
+END;
+GO
+
+CREATE PROCEDURE getManagerByCityId @CityId INT
+AS
+BEGIN
+    SELECT Id,
+           FirstName + ' ' + LastName AS FullName
+    FROM dbo.Employees
+    WHERE CityId = @CityId
+          AND RoleId = 4
+    UNION
+    SELECT Id,
+           FirstName + ' ' + LastName AS FullName
+    FROM dbo.Employees
+    WHERE RoleId = 1;
+END;
+
+GO
+
+CREATE PROCEDURE getStoreInfo @StoreId INT
+AS
+BEGIN
+    SELECT StoreID,
+           StoreName,
+           Address,
+           Phone,
+           CityId,
+           State,
+           ManagerId
+    FROM dbo.RetailStores
+    WHERE StoreID = @StoreId;
+END;
+GO
+
+CREATE PROCEDURE updateStore
+    @StoreID INT,
+    @StoreName NVARCHAR(100),
+    @Address NVARCHAR(100),
+    @Phone VARCHAR(20),
+    @CityId INT,
+    @ManagerId INT
+AS
+BEGIN
+    UPDATE dbo.RetailStores
+    SET StoreName = @StoreName,
+        Address = @Address,
+        Phone = @Phone,
+        CityId = @CityId,
+        ManagerId = @ManagerId
+    WHERE StoreID = @StoreID;
+    SELECT 1 AS Result;
+END;
+GO
+
+CREATE PROCEDURE getAvailableCityList
+AS
+BEGIN
+    SELECT Id,
+           Name,
+           PostalCode,
+           IsHidden
+    FROM dbo.CityAvailable;
+END;
+GO
+
+CREATE PROCEDURE addNewCity
+    @CityName NVARCHAR(50),
+    @PostalCode VARCHAR(10)
+AS
+BEGIN
+    INSERT INTO dbo.CityAvailable
+    (
+        Name,
+        PostalCode,
+        IsHidden
+    )
+    VALUES
+    (   @CityName,   -- Name - nvarchar(50)
+        @PostalCode, -- PostalCode - varchar(10)
+        DEFAULT      -- IsHidden - bit
+        );
+    SELECT 1 AS Result;
+END;
+GO
+
+CREATE PROCEDURE getCityInfo @cityId INT
+AS
+BEGIN
+    SELECT Id,
+           Name,
+           PostalCode,
+           IsHidden
+    FROM dbo.CityAvailable
+    WHERE Id = @cityId;
+END;
+GO
+
+CREATE PROCEDURE updateCity
+    @Id INT,
+    @CityName NVARCHAR(50),
+    @PostalCode NVARCHAR(50)
+AS
+BEGIN
+    UPDATE dbo.CityAvailable
+    SET Name = @CityName,
+        PostalCode = @PostalCode
+    WHERE Id = @Id;
+
+    SELECT 1 AS Result;
+END;
+GO
+
+CREATE PROCEDURE getOrderDetailByCustomer
+    @Customer VARCHAR(15),
+    @IsPhoneNumber BIT
+AS
+BEGIN
+    IF (@IsPhoneNumber = 1)
+    BEGIN
+        SELECT O.Id AS OrderId,
+               O.CustomerID,
+               O.OrderStatus,
+               O.PaymentMethod,
+               O.OrderDate,
+               O.DeliveryDate,
+               C.Id,
+               C.FirstName,
+               C.LastName,
+               C.Phone,
+               C.Address,
+               AP.ConnectionType,
+               AP.OptionName,
+               AP.Description,
+               AP.Price,
+               AP.CallCharges,
+               P.ProductName,
+               B.BillAmount
+        FROM dbo.Orders O
+            JOIN dbo.Customers C
+                ON O.CustomerID = C.Id
+            JOIN dbo.CustomerPlan CP
+                ON CP.CustomerId = C.Id
+            JOIN dbo.AllPlanDetailTable AP
+                ON CP.PlanDetailId = AP.PlanDetailId
+            JOIN dbo.Products P
+                ON CP.ProductId = P.Id
+            JOIN dbo.Billing B
+                ON C.Id = B.CustomerID
+        WHERE C.Phone = @Customer;
+        RETURN;
+
+    END;
+
+
+    SELECT O.Id AS OrderId,
+           O.CustomerID,
+           O.OrderStatus,
+           O.PaymentMethod,
+           O.OrderDate,
+           O.DeliveryDate,
+           C.Id,
+           C.FirstName,
+           C.LastName,
+           C.Phone,
+           C.Address,
+           AP.ConnectionType,
+           AP.OptionName,
+           AP.Description,
+           AP.Price,
+           AP.CallCharges,
+           P.ProductName,
+           B.BillAmount
+    FROM dbo.Orders O
+        JOIN dbo.Customers C
+            ON O.CustomerID = C.Id
+        JOIN dbo.CustomerPlan CP
+            ON CP.CustomerId = C.Id
+        JOIN dbo.AllPlanDetailTable AP
+            ON CP.PlanDetailId = AP.PlanDetailId
+        JOIN dbo.Products P
+            ON CP.ProductId = P.Id
+        JOIN dbo.Billing B
+            ON C.Id = B.CustomerID
+    WHERE C.Id = @Customer;
+END;
+
+GO
+
+CREATE PROCEDURE CustomerFeedbackByOrderId
+    @OrderId INT,
+    @Subject NVARCHAR(100),
+    @Comments NVARCHAR(1000)
+AS
+BEGIN
+    DECLARE @CustomerId VARCHAR(12) =
+            (
+                SELECT TOP 1 CustomerID FROM dbo.Orders WHERE Id = @OrderId
+            );
+
+    IF @CustomerId IS NULL
+    BEGIN
+
+        SELECT 0 AS Result;
+        RETURN;
+    END;
+
+    INSERT INTO dbo.Feedback
+    (
+        OrderID,
+        CustomerID,
+        [Subject],
+        Comments
+    )
+    VALUES
+    (   @OrderId,    -- OrderID - int
+        @CustomerId, -- CustomerID - varchar(12)
+        @Subject,    -- Subject - nvarchar(100)
+        @Comments    -- Comments - nvarchar(1000)
+        );
+
+    SELECT 1 AS Result;
+
+END;
+
+GO
+
+CREATE PROCEDURE getAllFeedback
+AS
+BEGIN
+    SELECT F.Id,
+           F.OrderID,
+           F.CustomerID,
+           F.Subject,
+           F.Comments,
+           C.FirstName,
+           C.LastName,
+           C.Phone,
+           C.Address,
+           C.CreatedDate
+    FROM dbo.Feedback F
+        JOIN dbo.Customers C
+            ON F.CustomerID = C.Id;
+
+END;
+
+GO
+
+CREATE PROCEDURE CheckPermission
+    @Token VARCHAR(40),
+    @Permisson VARCHAR(50)
+AS
+BEGIN
+	IF EXISTS (
+    SELECT TOP 1 A.PermissionName
+    FROM dbo.EmployeeToken ET
+        JOIN dbo.Employees E
+            ON E.Id = ET.EmployeeId
+        JOIN dbo.Roles R
+            ON E.RoleId = R.Id
+        JOIN dbo.RoleAuthorization RA
+            ON R.Id = RA.RoleId
+        JOIN dbo.Author A
+            ON RA.AuthorizationId = A.Id
+    WHERE ET.Token = @Token
+          AND A.PermissionName = @Permisson)
+		  BEGIN
+		      SELECT 1 AS Result
+			  RETURN
+		  END
+
+		  SELECT 0 AS Result
+END;
