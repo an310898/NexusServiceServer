@@ -29,7 +29,7 @@ namespace Nexus.Controllers
           {
               return NotFound();
           }
-            return await _context.Employees.Include(x=>x.Role).Include(x=>x.City).ToListAsync();
+            return await _context.Employees.Where(x=>x.Id!=1).Include(x=>x.Role).Include(x=>x.City).ToListAsync();
         }
 
         // GET: api/Employees/5

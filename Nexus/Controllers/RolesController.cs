@@ -28,7 +28,7 @@ namespace Nexus.Controllers
           {
               return NotFound();
           }
-            return await _context.Roles.ToListAsync();
+            return await _context.Roles.Where(x => x.Id != 1).ToListAsync();
         }
 
         // GET: api/Roles/5
