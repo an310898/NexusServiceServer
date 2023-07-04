@@ -1111,6 +1111,8 @@ INSERT INTO dbo.Author
 VALUES
 ('Feedback' -- PermissionName - varchar(50)
     )
+	
+
 INSERT INTO dbo.RoleAuthorization
 (
     RoleId,
@@ -1120,8 +1122,63 @@ SELECT 1,
        Id
 FROM Author;
 
+INSERT INTO dbo.RoleAuthorization
+(
+    RoleId,
+    AuthorizationId
+)
+SELECT 2,
+       3
+INSERT INTO dbo.RoleAuthorization
+(
+    RoleId,
+    AuthorizationId
+)
+SELECT 2,
+       2
+INSERT INTO dbo.RoleAuthorization
+(
+    RoleId,
+    AuthorizationId
+)
+SELECT 2,
+       4
+	   INSERT INTO dbo.RoleAuthorization
+(
+    RoleId,
+    AuthorizationId
+)
+SELECT 3,
+       4
+	   INSERT INTO dbo.RoleAuthorization
+(
+    RoleId,
+    AuthorizationId
+)
+SELECT 3,
+       5
+   INSERT INTO dbo.RoleAuthorization
+(
+    RoleId,
+    AuthorizationId
+)
+SELECT 4,
+       4
+   INSERT INTO dbo.RoleAuthorization
+(
+    RoleId,
+    AuthorizationId
+)
+SELECT 4,
+       6
+   INSERT INTO dbo.RoleAuthorization
+(
+    RoleId,
+    AuthorizationId
+)
+SELECT 4,
+       8
 
-USE NEXUS;
 GO
 
 
@@ -2141,3 +2198,5 @@ BEGIN
 
 		  SELECT 0 AS Result
 END;
+GO
+
